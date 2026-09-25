@@ -1,0 +1,4 @@
+[{"date":"2026-10-02 12:30:00","country":"US","event":"Nonfarm Payrolls (Sep)","currency":"USD","previous":73,"estimate":118,"actual":140,"change":67,"impact":"High","unit":"K"},
+ {"date":"2026-10-02 12:30:00","country":"US","event":"Unemployment Rate (Sep)","currency":"USD","previous":4.3,"estimate":4.3,"actual":4.2,"change":-0.1,"impact":"High","unit":"%"},
+ {"date":"2026-10-15 15:30:00","country":"IL","event":"Inflation Rate MoM (Sep)","currency":"ILS","previous":0.7,"estimate":0.2,"actual":null,"change":null,"impact":"High","unit":"%"},
+ {"date":"2026-10-07 06:00:00","country":"DE","event":"Factory Orders MoM (Aug)","currency":"EUR","previous":-2.9,"estimate":1.0,"actual":null,"impact":"Medium","unit":"%"}]

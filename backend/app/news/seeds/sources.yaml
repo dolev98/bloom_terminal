@@ -1,0 +1,128 @@
+# Registry of news feeds. Adapters in app/news/sources/ read their feed lists from here.
+# kind: filing | wire | news_api | rss | social. grey: unofficial/unlicensed scraping (gated by prefs.grey_sources_enabled).
+# egress: "il" = needs an Israeli IP. verify_from_il_ip: URL 403s from non-IL IPs and must be confirmed before enabling.
+# Feed URLs below were confirmed live on 2026-09-23 unless marked verify: true.
+
+adapters:
+  - id: sec_filings
+    kind: filing
+    name: SEC EDGAR filings (8-K, 10-K/Q, 20-F, 6-K, Form 4, 13D/G, DEF 14A)
+    base_url: https://data.sec.gov/submissions/
+    cadence_s: 600
+    license: "SEC EDGAR — public domain; fair-access 10 req/s; User-Agent 'Name email' mandatory"
+    grey: false
+  - id: google_news
+    kind: rss
+    name: Google News RSS (per-ticker search, en + he)
+    base_url: https://news.google.com/rss/search
+    cadence_s: 900
+    license: "Unofficial RSS; personal use; links redirect via news.google.com (store original link)"
+    grey: true
+  - id: wires
+    kind: wire
+    name: Press-release wires (GlobeNewswire, PR Newswire, Business Wire)
+    base_url: https://www.globenewswire.com/RssFeed/
+    cadence_s: 600
+    license: "Public RSS feeds intended for syndication; headlines + snippets only"
+    grey: false
+  - id: finnhub_news
+    kind: news_api
+    name: Finnhub company news
+    base_url: https://finnhub.io/api/v1/company-news
+    cadence_s: 900
+    license: "Finnhub free tier: personal, non-commercial"
+    grey: false
+  - id: massive
+    kind: news_api
+    name: Massive (ex-Polygon) reference news with per-ticker insights
+    base_url: https://api.massive.com/v2/reference/news
+    cadence_s: 1800
+    license: "Massive Basic (free): 5 calls/min; requires massive_api_key"
+    grey: false
+  - id: alphavantage
+    kind: news_api
+    name: Alpha Vantage NEWS_SENTIMENT
+    base_url: https://www.alphavantage.co/query
+    cadence_s: 7200
+    license: "Alpha Vantage free: 25 requests/day; requires alphavantage_api_key"
+    grey: false
+  - id: israel_rss
+    kind: rss
+    name: Israeli financial press RSS (TheMarker, Globes, Calcalist, Bizportal)
+    base_url: https://www.themarker.com/srv/
+    cadence_s: 900
+    license: "Public RSS; headlines + snippets only; Israeli IP for some publishers"
+    grey: false
+    egress: il
+    lang: he
+  - id: gdelt
+    kind: news_api
+    name: GDELT DOC 2.0 (global article list + tone timeline)
+    base_url: https://api.gdeltproject.org/api/v2/doc/doc
+    cadence_s: 3600
+    license: "GDELT: free, open; 1 request / 5 s"
+    grey: false
+
+# --- feed lists consumed by the adapters --------------------------------------------------------------
+wires:
+  - id: gnw_earnings
+    publisher: GlobeNewswire
+    url: "https://www.globenewswire.com/RssFeed/subjectcode/13-Earnings%20Releases%20and%20Operating%20Results/feedTitle/GlobeNewswire%20-%20Earnings%20Releases%20and%20Operating%20Results"
+    subject: earnings
+    ticker_field: category   # <category>Nasdaq:GFAI</category>
+  - id: gnw_mna
+    publisher: GlobeNewswire
+    url: "https://www.globenewswire.com/RssFeed/subjectcode/27-Mergers%20and%20Acquisitions/feedTitle/GlobeNewswire%20-%20Mergers%20and%20Acquisitions"
+    subject: m&a
+    ticker_field: category
+  - id: prn_financial
+    publisher: PR Newswire
+    url: "https://www.prnewswire.com/rss/financial-services-latest-news/financial-services-latest-news-list.rss"
+    subject: other
+  - id: prn_all
+    publisher: PR Newswire
+    url: "https://www.prnewswire.com/rss/news-releases-list.rss"
+    subject: other
+    enabled: false           # very high volume; enable if you want every release entity-matched
+  - id: bw_all
+    publisher: Business Wire
+    url: "https://feed.businesswire.com/rss/home/?rss=G1QFDERJXkJeEFpRVQ=="
+    subject: other
+
+israel:
+  - id: tm_markets
+    publisher: TheMarker
+    url: https://www.themarker.com/srv/tm-markets
+    lang: he
+    verify_from_il_ip: false
+  - id: tm_wallstreet
+    publisher: TheMarker
+    url: https://www.themarker.com/srv/tm-wallstreet
+    lang: he
+    verify_from_il_ip: false
+  - id: tm_technation
+    publisher: TheMarker
+    url: https://www.themarker.com/srv/tm-technation
+    lang: he
+    verify_from_il_ip: false
+  - id: globes_home
+    publisher: Globes
+    url: "https://www.globes.co.il/webservice/rss/rssfeeder.asmx/FeederNode?iID=2"
+    lang: he
+    verify_from_il_ip: true   # reachable on 2026-09-23 but Globes geofences intermittently
+  - id: calcalist_news
+    publisher: Calcalist
+    url: "https://www.calcalist.co.il/GlobalData/rss/cal_news.xml"
+    lang: he
+    verify_from_il_ip: true   # 404 from a non-IL IP on 2026-09-23 — confirm the URL from Israel
+    enabled: false
+  - id: bizportal_news
+    publisher: Bizportal
+    url: "https://www.bizportal.co.il/rss/news"
+    lang: he
+    verify_from_il_ip: true   # 404 from a non-IL IP on 2026-09-23 — confirm the URL from Israel
+    enabled: false
+
+google_news:
+  en: "https://news.google.com/rss/search?q={query}&hl=en-US&gl=US&ceid=US:en"
+  he: "https://news.google.com/rss/search?q={query}&hl=he&gl=IL&ceid=IL:he"

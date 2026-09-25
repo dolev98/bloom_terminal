@@ -1,0 +1,183 @@
+# Macro dashboard mapping: country -> section -> indicator -> series id (string) or {id, transform}.
+# Indicator default transforms: yoy (level index -> % y/y), pct (% m/m or q/q), diff, level (series already a rate).
+# `new_series` are catalog rows added at macro-service startup via upsert_spec when missing (seed_series.yaml is untouched).
+# A mapping entry may also carry display overrides: `name`, `unit`, and `scale` (multiplier from the stored unit to the
+# display unit, e.g. 0.001 for count -> thousands or $mn -> $bn). Never map one series under two different meanings.
+countries:
+  US: {name: United States, currency: USD}
+  IL: {name: Israel, currency: ILS}
+  EA: {name: Euro area, currency: EUR}
+  DE: {name: Germany, currency: EUR}
+  GB: {name: United Kingdom, currency: GBP}
+  JP: {name: Japan, currency: JPY}
+  CN: {name: China, currency: CNY}
+
+sections:
+  growth: [gdp_yoy, gdp_qoq_saar, nowcast, ip, retail]
+  inflation: [cpi, core_cpi, ppi, breakeven_10y]
+  labour: [unemployment, payrolls, claims, wages]
+  rates: [policy, y2, y10, curve]
+  external: [trade_balance, current_account, fx, reserves]
+  fiscal_money: [debt_gdp, deficit, m2, credit]
+  sentiment_housing: [consumer, pmi, housing]
+
+indicators:
+  gdp_yoy: {name: "GDP (YoY)", transform: yoy, unit: "%", polarity: growth}
+  gdp_qoq_saar: {name: "GDP (QoQ SAAR)", transform: level, unit: "%", polarity: growth}
+  nowcast: {name: "GDP nowcast", transform: level, unit: "%", polarity: growth}
+  ip: {name: "Industrial production (YoY)", transform: yoy, unit: "%", polarity: growth}
+  retail: {name: "Retail sales (YoY)", transform: yoy, unit: "%", polarity: growth}
+  cpi: {name: "CPI (YoY)", transform: yoy, unit: "%", polarity: inflation}
+  core_cpi: {name: "Core CPI (YoY)", transform: yoy, unit: "%", polarity: inflation}
+  ppi: {name: "PPI (YoY)", transform: yoy, unit: "%", polarity: inflation}
+  breakeven_10y: {name: "10Y breakeven", transform: level, unit: "%", polarity: inflation}
+  unemployment: {name: "Unemployment rate", transform: level, unit: "%", polarity: neutral}
+  payrolls: {name: "Employment (MoM chg)", transform: diff, unit: "k", polarity: growth}
+  claims: {name: "Initial claims", transform: level, unit: "k", polarity: neutral}
+  wages: {name: "Wages (YoY)", transform: yoy, unit: "%", polarity: inflation}
+  policy: {name: "Policy rate", transform: level, unit: "%", polarity: neutral}
+  y2: {name: "2Y yield", transform: level, unit: "%", polarity: neutral}
+  y10: {name: "10Y yield", transform: level, unit: "%", polarity: neutral}
+  curve: {name: "2s10s (bp)", transform: level, unit: "bp", polarity: neutral}
+  trade_balance: {name: "Trade balance", transform: level, unit: "bn", polarity: neutral}
+  current_account: {name: "Current account", transform: level, unit: "bn", polarity: neutral}
+  fx: {name: "FX vs USD", transform: level, unit: "", polarity: neutral}
+  reserves: {name: "FX reserves", transform: level, unit: "bn", polarity: neutral}
+  debt_gdp: {name: "Debt / GDP", transform: level, unit: "%", polarity: neutral}
+  deficit: {name: "Budget balance", transform: level, unit: "bn", polarity: neutral}
+  m2: {name: "M2 (YoY)", transform: yoy, unit: "%", polarity: neutral}
+  credit: {name: "Bank credit (YoY)", transform: yoy, unit: "%", polarity: growth}
+  consumer: {name: "Consumer sentiment", transform: level, unit: "index", polarity: growth}
+  pmi: {name: "Manufacturing PMI", transform: level, unit: "index", polarity: growth}
+  housing: {name: "Housing starts / prices", transform: level, unit: "", polarity: growth}
+
+mapping:
+  US:
+    growth: {gdp_yoy: fred:GDPC1, gdp_qoq_saar: fred:A191RL1Q225SBEA, nowcast: fred:GDPNOW, ip: fred:INDPRO, retail: fred:RSAFS}
+    inflation: {cpi: fred:CPIAUCSL, core_cpi: fred:CPILFESL, ppi: fred:PPIFIS, breakeven_10y: fred:T10YIE}
+    labour: {unemployment: fred:UNRATE, payrolls: fred:PAYEMS, claims: {id: fred:ICSA, transform: level, scale: 0.001}, wages: fred:CES0500000003}
+    rates: {policy: fred:DFF, y2: fred:DGS2, y10: fred:DGS10, curve: derived:US2S10S_BP}
+    external: {trade_balance: {id: fred:BOPGSTB, transform: level, scale: 0.001, unit: "USD bn"}, fx: fred:DTWEXBGS}
+    fiscal_money: {debt_gdp: fred:GFDEGDQ188S, m2: fred:M2SL, credit: fred:TOTLL}
+    sentiment_housing: {consumer: fred:UMCSENT, pmi: manual:ISM_MFG_PMI, housing: {id: fred:HOUST, transform: level}}
+  IL:
+    growth: {gdp_yoy: {id: "oecd:OECD.SDD.NAD,DSD_NAMAIN1@DF_QNA,1.1/Q.Y.ISR.S1.S1.B1GQ._Z._Z._Z.XDC.LR.LA.T0102", transform: yoy}}
+    inflation: {cpi: cbs:120010, core_cpi: boi:PRI/CP_NO_EN}
+    labour: {unemployment: fred:LRHUTTTTILM156S}
+    rates: {policy: boi:BR/MNT_RIB_BOI_D, y10: fred:IRLTLT01ILM156N, curve: {id: derived:IL_US_10Y_SPREAD_M, transform: level, name: "Israel − US 10Y spread", unit: "pp"}}
+    external: {fx: boi:EXR/RER_USD_ILS}
+    fiscal_money: {}
+    sentiment_housing: {}
+  EA:
+    growth: {gdp_yoy: {id: "estat:namq_10_gdp/Q.CLV_PCH_SM.SCA.B1GQ.EA21", transform: level}, ip: {id: "estat:sts_inpr_m/M.PRD.B-D.CA.PCH_SM.EA21", transform: level}}
+    inflation: {cpi: {id: "estat:prc_hicp_minr/M.RCH_A.TOTAL.EA21", transform: level}, core_cpi: {id: "estat:prc_hicp_minr/M.RCH_A.TOT_X_NRG_FOOD.EA21", transform: level}}
+    labour: {unemployment: {id: "estat:une_rt_m/M.SA.TOTAL.PC_ACT.T.EA21", transform: level}}
+    rates: {policy: fred:ECBDFR, y2: "ecb:YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_2Y", y10: "ecb:YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_10Y"}
+    external: {fx: fred:DEXUSEU}
+    fiscal_money: {m2: "ecb:BSI/M.U2.Y.V.M20.X.1.U2.2300.Z01.E"}
+    sentiment_housing: {consumer: {id: "estat:ei_bsco_m/M.BS-CSMCI.SA.BAL.EA21", transform: level}}
+  DE:
+    growth: {gdp_yoy: {id: "estat:namq_10_gdp/Q.CLV_PCH_SM.SCA.B1GQ.DE", transform: level}, ip: {id: "estat:sts_inpr_m/M.PRD.B-D.CA.PCH_SM.DE", transform: level}}
+    inflation: {cpi: {id: "estat:prc_hicp_minr/M.RCH_A.TOTAL.DE", transform: level}}
+    labour: {unemployment: {id: "estat:une_rt_m/M.SA.TOTAL.PC_ACT.T.DE", transform: level}}
+    rates: {policy: fred:ECBDFR, y10: fred:IRLTLT01DEM156N}
+    external: {fx: fred:DEXUSEU}
+    fiscal_money: {}
+    sentiment_housing: {}
+  GB:
+    growth: {gdp_yoy: {id: "ons:IHYR/PN2", transform: level}}
+    inflation: {cpi: {id: "ons:D7G7/MM23", transform: level}, core_cpi: {id: "ons:DKO8/MM23", transform: level}}
+    labour: {unemployment: {id: "ons:MGSX/LMS", transform: level}}
+    rates: {policy: "bis:WS_CBPOL/M.GB", y10: fred:IRLTLT01GBM156N}
+    external: {fx: fred:DEXUSUK}
+    fiscal_money: {}
+    sentiment_housing: {}
+  JP:
+    growth: {ip: fred:JPNPROINDMISMEI}
+    inflation: {cpi: "imf:CPI/JPN.CPI._T.IX.M"}
+    labour: {unemployment: fred:LRUNTTTTJPM156S}
+    rates: {policy: "bis:WS_CBPOL/M.JP", y10: fred:IRLTLT01JPM156N}
+    external: {fx: fred:DEXJPUS}
+    fiscal_money: {}
+    sentiment_housing: {}
+  CN:
+    growth: {}
+    inflation: {cpi: "imf:CPI/CHN.CPI._T.IX.M"}
+    labour: {}
+    rates: {policy: "bis:WS_CBPOL/M.CN"}
+    external: {fx: fred:DEXCHUS}
+    fiscal_money: {}
+    sentiment_housing: {}
+
+new_series:
+  # --- US (FRED) ---
+  - {series_id: "fred:PPIFIS", name: "US PPI final demand (index)", freq: 1mo, unit: index, sa: true, value_kind: level_index, default_transform: yoy, country: US, category: inflation, tags: [ppi]}
+  - {series_id: "fred:CES0500000003", name: "US average hourly earnings, private (USD)", freq: 1mo, unit: usd, sa: true, value_kind: price, default_transform: yoy, country: US, category: labour, tags: [wages]}
+  - {series_id: "fred:BOPGSTB", name: "US trade balance: goods & services ($mn)", freq: 1mo, unit: usd_mn, sa: true, value_kind: flow, default_transform: level, country: US, category: trade}
+  - {series_id: "fred:GFDEGDQ188S", name: "US federal debt / GDP (%)", freq: 1q, unit: pct, value_kind: ratio, default_transform: level, country: US, category: fiscal}
+  - {series_id: "fred:TOTLL", name: "US bank loans & leases ($bn)", freq: 1w, unit: usd_bn, sa: true, value_kind: stock, default_transform: yoy, country: US, category: credit}
+  - {series_id: "fred:PERMIT", name: "US building permits (thousands, seasonally adjusted annual rate)", freq: 1mo, unit: thousands, sa: true, value_kind: flow, default_transform: yoy, country: US, category: housing}
+  - {series_id: "fred:CSUSHPINSA", name: "S&P/Case-Shiller US home price index", freq: 1mo, unit: index, value_kind: level_index, default_transform: yoy, country: US, category: housing}
+  - {series_id: "fred:MICH", name: "UMich 1-year inflation expectations", freq: 1mo, unit: pct, value_kind: survey, default_transform: level, country: US, category: inflation}
+  - {series_id: "fred:T5YIFR", name: "US 5y5y forward inflation expectation", freq: 1d, unit: pct, value_kind: yield, default_transform: level, country: US, category: inflation}
+  - {series_id: "fred:DEXUSUK", name: "USD per GBP", freq: 1d, unit: usd, value_kind: price, country: GB, category: fx}
+  - {series_id: "fred:DEXCHUS", name: "CNY per USD", freq: 1d, unit: cny, value_kind: price, country: CN, category: fx}
+  - {series_id: "fred:IRLTLT01GBM156N", name: "UK 10Y govt yield (monthly)", freq: 1mo, unit: pct, value_kind: yield, country: GB, category: rates}
+  - {series_id: "fred:IRLTLT01JPM156N", name: "Japan 10Y govt yield (monthly)", freq: 1mo, unit: pct, value_kind: yield, country: JP, category: rates}
+  - {series_id: "fred:LRUNTTTTJPM156S", name: "Japan unemployment rate (OECD)", freq: 1mo, unit: pct, sa: true, value_kind: survey, default_transform: diff, country: JP, category: labour}
+  - {series_id: "fred:JPNPROINDMISMEI", name: "Japan industrial production (OECD index)", freq: 1mo, unit: index, sa: true, value_kind: level_index, default_transform: yoy, country: JP, category: activity}
+  # --- Israel ---
+  - {series_id: "cbs:120010", name: "Israel consumer price index (CBS)", freq: 1mo, unit: index, value_kind: level_index, default_transform: yoy, country: IL, category: inflation, tags: [cpi, israel], publication_lag_days: 15, license_note: "CBS open data; Israel egress"}
+  - {series_id: "boi:PRI/CP", name: "Israel consumer price index (Bank of Israel, 2024 = 100)", freq: 1mo, unit: index, value_kind: level_index, default_transform: yoy, country: IL, category: inflation, tags: [cpi, israel]}
+  - {series_id: "boi:PRI/CP_NO_EN", name: "Israel consumer prices excluding energy (Bank of Israel)", freq: 1mo, unit: index, value_kind: level_index, default_transform: yoy, country: IL, category: inflation, tags: [cpi, core, israel]}
+  - {series_id: "oecd:OECD.SDD.NAD,DSD_NAMAIN1@DF_QNA,1.1/Q.Y.ISR.S1.S1.B1GQ._Z._Z._Z.XDC.LR.LA.T0102", name: "Israel real GDP (OECD, inflation-adjusted, seasonally adjusted)", freq: 1q, unit: ils_mn, sa: true, value_kind: flow, default_transform: yoy, country: IL, category: activity, license_note: "OECD; key unverified (wildcard-filtered)"}
+  # --- Euro area / Germany (Eurostat, ECB) ---
+  # Since Jan 2026 the euro area has 21 members: Eurostat's current aggregate is EA21 (back-calculated), and HICP moved
+  # to ECOICOP ver.2 in prc_hicp_minr (prc_hicp_manr is frozen at 2025-12). Keys checked against the API on 2026-09-24.
+  - {series_id: "estat:prc_hicp_minr/M.RCH_A.TOTAL.EA21", name: "Euro area inflation (consumer prices), vs a year earlier (%)", freq: 1mo, unit: pct, value_kind: survey, default_transform: level, country: EA, category: inflation}
+  - {series_id: "estat:prc_hicp_minr/M.RCH_A.TOT_X_NRG_FOOD.EA21", name: "Euro area core inflation (excluding energy & food), vs a year earlier (%)", freq: 1mo, unit: pct, value_kind: survey, default_transform: level, country: EA, category: inflation}
+  - {series_id: "estat:prc_hicp_minr/M.RCH_A.TOTAL.DE", name: "Germany inflation (consumer prices), vs a year earlier (%)", freq: 1mo, unit: pct, value_kind: survey, default_transform: level, country: DE, category: inflation}
+  - {series_id: "estat:namq_10_gdp/Q.CLV_PCH_SM.SCA.B1GQ.EA21", name: "Euro area real GDP, change vs a year earlier (%, seasonally adjusted)", freq: 1q, unit: pct, value_kind: survey, default_transform: level, country: EA, category: activity}
+  - {series_id: "estat:sts_inpr_m/M.PRD.B-D.CA.PCH_SM.EA21", name: "Euro area industrial production, vs a year earlier (%)", freq: 1mo, unit: pct, value_kind: survey, default_transform: level, country: EA, category: activity}
+  - {series_id: "estat:sts_inpr_m/M.PRD.B-D.CA.PCH_SM.DE", name: "Germany industrial production, vs a year earlier (%)", freq: 1mo, unit: pct, value_kind: survey, default_transform: level, country: DE, category: activity}
+  - {series_id: "estat:une_rt_m/M.SA.TOTAL.PC_ACT.T.EA21", name: "Euro area unemployment rate (Eurostat, seasonally adjusted, 21 members)", freq: 1mo, unit: pct, value_kind: survey, default_transform: diff, country: EA, category: labour}
+  - {series_id: "estat:ei_bsco_m/M.BS-CSMCI.SA.BAL.EA21", name: "Euro area consumer confidence (balance of positive minus negative answers, seasonally adjusted)", freq: 1mo, unit: balance, value_kind: survey, default_transform: diff, country: EA, category: sentiment}
+  - {series_id: "estat:prc_hicp_manr/M.RCH_A.CP00.EA20", name: "Euro area HICP all items (% y/y)", freq: 1mo, unit: pct, value_kind: survey, default_transform: level, country: EA, category: inflation}
+  - {series_id: "estat:prc_hicp_manr/M.RCH_A.TOT_X_NRG_FOOD.EA20", name: "Euro area HICP ex energy & food (% y/y)", freq: 1mo, unit: pct, value_kind: survey, default_transform: level, country: EA, category: inflation}
+  - {series_id: "estat:prc_hicp_manr/M.RCH_A.CP00.DE", name: "Germany inflation (consumer prices), vs a year earlier (%)", freq: 1mo, unit: pct, value_kind: survey, default_transform: level, country: DE, category: inflation}
+  - {series_id: "estat:namq_10_gdp/Q.CLV_PCH_SM.SCA.B1GQ.EA20", name: "Euro area GDP volume (% y/y, SCA)", freq: 1q, unit: pct, value_kind: survey, default_transform: level, country: EA, category: activity, license_note: "Eurostat; key unverified"}
+  - {series_id: "estat:namq_10_gdp/Q.CLV_PCH_SM.SCA.B1GQ.DE", name: "Germany real GDP, change vs a year earlier (%, seasonally adjusted)", freq: 1q, unit: pct, value_kind: survey, default_transform: level, country: DE, category: activity, license_note: "Eurostat; key unverified"}
+  - {series_id: "estat:sts_inpr_m/M.B-D.PCH_SM.SCA.EA20", name: "Euro area industrial production (% y/y)", freq: 1mo, unit: pct, value_kind: survey, default_transform: level, country: EA, category: activity, license_note: "Eurostat; key unverified"}
+  - {series_id: "estat:sts_inpr_m/M.B-D.PCH_SM.SCA.DE", name: "Germany industrial production (% y/y)", freq: 1mo, unit: pct, value_kind: survey, default_transform: level, country: DE, category: activity, license_note: "Eurostat; key unverified"}
+  - {series_id: "estat:une_rt_m/M.SA.TOTAL.PC_ACT.T.DE", name: "Germany unemployment rate (Eurostat, seasonally adjusted)", freq: 1mo, unit: pct, value_kind: survey, default_transform: diff, country: DE, category: labour, license_note: "Eurostat; key unverified"}
+  - {series_id: "estat:ei_bsco_m/M.BS-CSMCI.SA.BAL.EA20", name: "Euro area consumer confidence (balance, SA)", freq: 1mo, unit: balance, value_kind: survey, default_transform: diff, country: EA, category: sentiment, license_note: "Eurostat; key unverified"}
+  - {series_id: "ecb:YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_2Y", name: "Euro area AAA 2Y spot yield (ECB YC)", freq: 1d, unit: pct, value_kind: yield, country: EA, category: rates}
+  - {series_id: "ecb:YC/B.U2.EUR.4F.G_N_A.SV_C_YM.SR_10Y", name: "Euro area AAA 10Y spot yield (ECB YC)", freq: 1d, unit: pct, value_kind: yield, country: EA, category: rates}
+  - {series_id: "ecb:BSI/M.U2.Y.V.M20.X.1.U2.2300.Z01.E", name: "Euro area M2 (EUR mn)", freq: 1mo, unit: eur_mn, value_kind: stock, default_transform: yoy, country: EA, category: liquidity}
+  # --- UK (ONS) ---
+  - {series_id: "ons:D7G7/MM23", name: "UK inflation (consumer prices), vs a year earlier (%, ONS)", freq: 1mo, unit: pct, value_kind: survey, default_transform: level, country: GB, category: inflation}
+  - {series_id: "ons:DKO8/MM23", name: "UK core inflation (excluding energy, food, alcohol & tobacco), vs a year earlier (%, ONS)", freq: 1mo, unit: pct, value_kind: survey, default_transform: level, country: GB, category: inflation}
+  - {series_id: "ons:MGSX/LMS", name: "UK unemployment rate 16+ (ONS MGSX)", freq: 1mo, unit: pct, value_kind: survey, default_transform: diff, country: GB, category: labour}
+  - {series_id: "ons:IHYR/PN2", name: "UK real GDP, change vs a year earlier (%, ONS)", freq: 1q, unit: pct, value_kind: survey, default_transform: level, country: GB, category: activity}
+  # --- BIS policy rates / IMF CPI ---
+  - {series_id: "bis:WS_CBPOL/M.GB", name: "Bank of England policy rate (BIS, end of month)", freq: 1mo, unit: pct, value_kind: yield, country: GB, category: rates}
+  - {series_id: "bis:WS_CBPOL/M.JP", name: "Bank of Japan policy rate (BIS, end of month)", freq: 1mo, unit: pct, value_kind: yield, country: JP, category: rates}
+  - {series_id: "bis:WS_CBPOL/M.CN", name: "People’s Bank of China policy rate (BIS, end of month)", freq: 1mo, unit: pct, value_kind: yield, country: CN, category: rates}
+  - {series_id: "bis:WS_CBPOL/M.CA", name: "Bank of Canada policy rate (BIS, end of month)", freq: 1mo, unit: pct, value_kind: yield, country: CA, category: rates}
+  - {series_id: "bis:WS_CBPOL/M.CH", name: "Swiss National Bank policy rate (BIS, end of month)", freq: 1mo, unit: pct, value_kind: yield, country: CH, category: rates}
+  - {series_id: "bis:WS_CBPOL/M.AU", name: "Reserve Bank of Australia cash rate (BIS, end of month)", freq: 1mo, unit: pct, value_kind: yield, country: AU, category: rates}
+  - {series_id: "bis:WS_CBPOL/M.IL", name: "Bank of Israel policy rate (BIS, end of month)", freq: 1mo, unit: pct, value_kind: yield, country: IL, category: rates}
+  - {series_id: "imf:CPI/JPN.CPI._T.IX.M", name: "Japan CPI all items (IMF, 2010=100)", freq: 1mo, unit: index, value_kind: level_index, default_transform: yoy, country: JP, category: inflation}
+  - {series_id: "imf:CPI/CHN.CPI._T.IX.M", name: "China CPI all items (IMF, 2010=100)", freq: 1mo, unit: index, value_kind: level_index, default_transform: yoy, country: CN, category: inflation}
+  - {series_id: "imf:CPI/ISR.CPI._T.IX.M", name: "Israel CPI all items (IMF)", freq: 1mo, unit: index, value_kind: level_index, default_transform: yoy, country: IL, category: inflation}
+
+# Catalog rows superseded above (frozen datasets / wrong keys). ensure_catalog() disables them so refresh jobs stop
+# hitting endpoints that can no longer return current data; their stored history is kept.
+retired_series:
+  - "estat:prc_hicp_manr/M.RCH_A.CP00.EA20"
+  - "estat:prc_hicp_manr/M.RCH_A.TOT_X_NRG_FOOD.EA20"
+  - "estat:prc_hicp_manr/M.RCH_A.CP00.DE"
+  - "estat:namq_10_gdp/Q.CLV_PCH_SM.SCA.B1GQ.EA20"
+  - "estat:sts_inpr_m/M.B-D.PCH_SM.SCA.EA20"
+  - "estat:sts_inpr_m/M.B-D.PCH_SM.SCA.DE"
+  - "estat:ei_bsco_m/M.BS-CSMCI.SA.BAL.EA20"

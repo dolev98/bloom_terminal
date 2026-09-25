@@ -1,0 +1,3 @@
+{"items": "1", "feed": [{"title": "Apple faces lawsuit over App Store fees", "url": "https://example.com/av1", "time_published": "20260923T101500",
+ "authors": ["a"], "summary": "A class action was filed.", "source": "Example Wire", "overall_sentiment_score": -0.35,
+ "topics": [{"topic": "Legal"}], "ticker_sentiment": [{"ticker": "AAPL", "relevance_score": "0.8", "ticker_sentiment_score": "-0.4"}, {"ticker": "FOREX:USD", "relevance_score": "0.1", "ticker_sentiment_score": "0"}]}]}

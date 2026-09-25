@@ -1,0 +1,17 @@
+# Hand-written Hebrew aliases -> ticker. Matched with optional Hebrew prefix letters (ב/ל/ה/ו/מ/ש/כ) and
+# final-letter normalisation. Aliases also attach to <TICKER>.TA entities when only the TASE line is watched.
+aliases:
+  TEVA: ["טבע", "טבע תעשיות פרמצבטיות"]
+  NICE: ["נייס"]
+  CHKP: ["צ'ק פוינט", "צק פוינט", "צ׳ק פוינט"]
+  ESLT: ["אלביט", "אלביט מערכות"]
+  ICL: ["איי.סי.אל", "איי סי אל", "כיל", "כימיקלים לישראל"]
+  TSEM: ["טאואר", "טאואר סמיקונדקטור"]
+  WIX: ["וויקס", "וויקס.קום"]
+  CYBR: ["סייברארק"]
+  MNDY: ["מאנדיי", "מאנדיי.קום"]
+  AAPL: ["אפל"]
+  MSFT: ["מיקרוסופט"]
+  NVDA: ["אנבידיה", "אנווידיה"]
+  GOOGL: ["גוגל", "אלפאבית"]
+  AMZN: ["אמזון"]

@@ -1,0 +1,174 @@
+# Central-bank decision calendars. decision_time is local wall time in `tz`. Rows with verified: false were not
+# confirmed on the bank's official page (fetch blocked / not yet published) — treat as tentative.
+# Dates from 2026-09 onward were checked against the official pages on 2026-09-24.
+banks:
+  - bank: fed
+    name: Federal Reserve (FOMC)
+    country: US
+    event_key: us.fomc
+    rate_series: fred:DFF
+    decision_time: "14:00"
+    tz: America/New_York
+    minutes_rule: fomc
+    source_url: https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm
+    verified_on: 2026-09-24
+    decisions:
+      - {date: 2026-01-28, start: 2026-01-27, sep: false, verified: true}
+      - {date: 2026-03-18, start: 2026-03-17, sep: true, verified: true}
+      - {date: 2026-04-29, start: 2026-04-28, sep: false, verified: true}
+      - {date: 2026-06-17, start: 2026-06-16, sep: true, verified: true}
+      - {date: 2026-07-29, start: 2026-07-28, sep: false, verified: true}
+      - {date: 2026-09-16, start: 2026-09-15, sep: true, verified: true}
+      - {date: 2026-10-28, start: 2026-10-27, sep: false, verified: true}
+      - {date: 2026-12-09, start: 2026-12-08, sep: true, verified: true}
+      - {date: 2027-01-27, start: 2027-01-26, sep: false, verified: true}
+      - {date: 2027-03-17, start: 2027-03-16, sep: true, verified: true}
+      - {date: 2027-04-28, start: 2027-04-27, sep: false, verified: true}
+      - {date: 2027-06-09, start: 2027-06-08, sep: true, verified: true}
+      - {date: 2027-07-28, start: 2027-07-27, sep: false, verified: true}
+      - {date: 2027-09-15, start: 2027-09-14, sep: true, verified: true}
+      - {date: 2027-10-27, start: 2027-10-26, sep: false, verified: true}
+      - {date: 2027-12-08, start: 2027-12-07, sep: true, verified: true}
+  - bank: ecb
+    name: European Central Bank
+    country: EA
+    event_key: ea.ecb
+    rate_series: fred:ECBDFR
+    decision_time: "14:15"
+    tz: Europe/Berlin
+    source_url: https://www.ecb.europa.eu/press/calendars/mgcgc/html/index.en.html
+    verified_on: 2026-09-24
+    decisions:
+      - {date: 2026-10-29, verified: true}
+      - {date: 2026-12-17, verified: true}
+      - {date: 2027-02-04, verified: true}
+      - {date: 2027-03-18, verified: true}
+      - {date: 2027-04-29, verified: true}
+      - {date: 2027-06-10, verified: true}
+      - {date: 2027-07-22, verified: true}
+      - {date: 2027-09-09, verified: true}
+      - {date: 2027-10-28, verified: true}
+      - {date: 2027-12-16, verified: true}
+  - bank: boi
+    name: Bank of Israel
+    country: IL
+    event_key: il.boi
+    rate_series: boi:BR/MNT_RIB_BOI_D
+    decision_time: "16:00"
+    tz: Asia/Jerusalem
+    source_url: https://www.boi.org.il/en/economic-roles/monetary-policy/interest-rate-decisions/
+    verified_on: 2026-09-24
+    decisions:
+      - {date: 2026-01-05, verified: true}
+      - {date: 2026-02-23, verified: true}
+      - {date: 2026-03-30, verified: true}
+      - {date: 2026-05-25, verified: true}
+      - {date: 2026-07-06, verified: true}
+      - {date: 2026-09-01, verified: true}
+      - {date: 2026-10-21, verified: true}
+      - {date: 2026-11-23, verified: true}
+      - {date: 2027-01-04, verified: true}
+      - {date: 2027-02-22, verified: true}
+      - {date: 2027-04-05, verified: true}
+      - {date: 2027-05-24, verified: true}
+      - {date: 2027-07-05, verified: true}
+      - {date: 2027-08-18, verified: true}
+      - {date: 2027-09-27, verified: true}
+      - {date: 2027-11-22, verified: true}
+  - bank: boe
+    name: Bank of England (MPC)
+    country: GB
+    event_key: gb.boe
+    rate_series: bis:WS_CBPOL/M.GB
+    decision_time: "12:00"
+    tz: Europe/London
+    source_url: https://www.bankofengland.co.uk/news/news
+    verified_on: 2026-09-24
+    decisions:
+      - {date: 2026-11-05, mpr: true, verified: true}
+      - {date: 2026-12-17, verified: true}
+      - {date: 2027-02-04, verified: true}
+      - {date: 2027-03-18, verified: true}
+      - {date: 2027-04-29, verified: true}
+      - {date: 2027-06-17, verified: true}
+      - {date: 2027-07-29, verified: true}
+      - {date: 2027-09-16, verified: true}
+      - {date: 2027-11-04, verified: true}
+      - {date: 2027-12-16, verified: true}
+  - bank: boj
+    name: Bank of Japan
+    country: JP
+    event_key: jp.boj
+    rate_series: bis:WS_CBPOL/M.JP
+    decision_time: "12:00"
+    tz: Asia/Tokyo
+    source_url: https://www.boj.or.jp/en/mopo/mpmsche_minu/index.htm
+    verified_on: 2026-09-24
+    decisions:  # date = second (decision) day of the two-day meeting
+      - {date: 2026-10-30, start: 2026-10-29, verified: true}
+      - {date: 2026-12-18, start: 2026-12-17, verified: true}
+      - {date: 2027-01-22, start: 2027-01-21, verified: true}
+      - {date: 2027-03-18, start: 2027-03-17, verified: true}
+      - {date: 2027-04-28, start: 2027-04-27, verified: true}
+      - {date: 2027-06-11, start: 2027-06-10, verified: true}
+      - {date: 2027-07-22, start: 2027-07-21, verified: true}
+      - {date: 2027-09-22, start: 2027-09-21, verified: true}
+      - {date: 2027-10-29, start: 2027-10-28, verified: true}
+      - {date: 2027-12-17, start: 2027-12-16, verified: true}
+  - bank: boc
+    name: Bank of Canada
+    country: CA
+    event_key: ca.boc
+    rate_series: bis:WS_CBPOL/M.CA
+    decision_time: "09:45"
+    tz: America/Toronto
+    source_url: https://www.bankofcanada.ca/press/press-schedule/
+    verified_on: 2026-09-24
+    decisions:
+      - {date: 2026-10-28, mpr: true, verified: true}
+      - {date: 2026-12-09, verified: true}
+      - {date: 2027-01-27, verified: true}
+      - {date: 2027-03-03, verified: true}
+      - {date: 2027-04-28, verified: true}
+      - {date: 2027-06-02, verified: true}
+      - {date: 2027-07-21, verified: true}
+      - {date: 2027-09-08, verified: true}
+      - {date: 2027-10-27, verified: true}
+      - {date: 2027-12-08, verified: true}
+  - bank: rba
+    name: Reserve Bank of Australia
+    country: AU
+    event_key: au.rba
+    rate_series: bis:WS_CBPOL/M.AU
+    decision_time: "14:30"
+    tz: Australia/Sydney
+    source_url: https://www.rba.gov.au/schedules-events/
+    verified_on: 2026-09-24
+    decisions:  # date = second (decision) day of the two-day meeting
+      - {date: 2026-09-29, start: 2026-09-28, verified: true}
+      - {date: 2026-11-03, start: 2026-11-02, verified: true}
+      - {date: 2026-12-08, start: 2026-12-07, verified: true}
+      - {date: 2027-02-09, start: 2027-02-08, verified: true}
+      - {date: 2027-03-23, start: 2027-03-22, verified: true}
+      - {date: 2027-05-04, start: 2027-05-03, verified: true}
+      - {date: 2027-06-22, start: 2027-06-21, verified: true}
+      - {date: 2027-08-10, start: 2027-08-09, verified: true}
+      - {date: 2027-09-28, start: 2027-09-27, verified: true}
+      - {date: 2027-11-02, start: 2027-11-01, verified: true}
+      - {date: 2027-12-14, start: 2027-12-13, verified: true}
+  - bank: snb
+    name: Swiss National Bank
+    country: CH
+    event_key: ch.snb
+    rate_series: bis:WS_CBPOL/M.CH
+    decision_time: "09:30"
+    tz: Europe/Zurich
+    source_url: https://www.snb.ch/en/the-snb/mandates-goals/monetary-policy/monetary-policy-assessments
+    verified_on: 2026-09-24
+    decisions:
+      - {date: 2026-09-24, verified: true}
+      - {date: 2026-12-10, verified: true}
+      - {date: 2027-03-18, verified: true}
+      - {date: 2027-06-24, verified: true}
+      - {date: 2027-09-23, verified: true}
+      - {date: 2027-12-16, verified: true}

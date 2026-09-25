@@ -1,0 +1,749 @@
+# Vendor / official release names -> canonical event keys.
+# Lookup is per country: normalize(name) (lower-case, m/m->mom, y/y->yoy, q/q->qoq, punctuation stripped).
+# `release_names` match official release families (FRED releases, BLS ICS "<release> for <Month YYYY>", BEA).
+# `headline_series` + `headline_transform` define the ALFRED first-print actual (transform of the vintage series' last obs).
+# period_rule: prev_month | prev_quarter | prev_week | none  (reference period relative to the release date)
+currency_to_country:
+  USD: US
+  ILS: IL
+  EUR: EA
+  GBP: GB
+  JPY: JP
+  CNY: CN
+  CAD: CA
+  CHF: CH
+  AUD: AU
+  NZD: NZ
+
+country_names:
+  US: [united states, usa, us]
+  IL: [israel, il]
+  EA: [euro area, eurozone, euro zone, eu, ea, ez, european union]
+  DE: [germany, de]
+  GB: [united kingdom, uk, gb, britain]
+  JP: [japan, jp]
+  CN: [china, cn]
+  CA: [canada, ca]
+  CH: [switzerland, ch]
+  AU: [australia, au]
+
+indicators:
+  # ---------------- United States ----------------
+  - event_key: us.cpi
+    country: US
+    title: "CPI (MoM)"
+    category: inflation
+    importance: 3
+    unit: "%"
+    linked_series: ["fred:CPIAUCSL", "fred:CPILFESL"]
+    headline_series: "fred:CPIAUCSL"
+    headline_transform: pct
+    release_time: "08:30"
+    period_rule: prev_month
+    release_names: ["Consumer Price Index"]
+    aliases: ["CPI m/m", "CPI MoM", "Consumer Price Index MoM", "Inflation Rate MoM", "CPI"]
+  - event_key: us.cpi_yoy
+    country: US
+    title: "CPI (YoY)"
+    category: inflation
+    importance: 3
+    unit: "%"
+    linked_series: ["fred:CPIAUCSL"]
+    headline_series: "fred:CPIAUCSL"
+    headline_transform: yoy
+    release_time: "08:30"
+    period_rule: prev_month
+    aliases: ["CPI y/y", "CPI YoY", "Inflation Rate YoY", "Consumer Price Index YoY"]
+  - event_key: us.core_cpi
+    country: US
+    title: "Core CPI (MoM)"
+    category: inflation
+    importance: 3
+    unit: "%"
+    linked_series: ["fred:CPILFESL"]
+    headline_series: "fred:CPILFESL"
+    headline_transform: pct
+    release_time: "08:30"
+    period_rule: prev_month
+    aliases: ["Core CPI m/m", "Core CPI MoM", "Core Inflation Rate MoM"]
+  - event_key: us.core_cpi_yoy
+    country: US
+    title: "Core CPI (YoY)"
+    category: inflation
+    importance: 2
+    unit: "%"
+    linked_series: ["fred:CPILFESL"]
+    headline_series: "fred:CPILFESL"
+    headline_transform: yoy
+    period_rule: prev_month
+    aliases: ["Core CPI y/y", "Core CPI YoY", "Core Inflation Rate YoY"]
+  - event_key: us.ppi
+    country: US
+    title: "PPI final demand (MoM)"
+    category: inflation
+    importance: 2
+    unit: "%"
+    linked_series: ["fred:PPIFIS"]
+    headline_series: "fred:PPIFIS"
+    headline_transform: pct
+    release_time: "08:30"
+    period_rule: prev_month
+    release_names: ["Producer Price Index"]
+    aliases: ["PPI m/m", "PPI MoM", "Producer Price Index MoM", "PPI"]
+  - event_key: us.core_ppi
+    country: US
+    title: "Core PPI (MoM)"
+    category: inflation
+    importance: 1
+    unit: "%"
+    period_rule: prev_month
+    aliases: ["Core PPI m/m", "Core PPI MoM"]
+  - event_key: us.pce
+    country: US
+    title: "PCE price index (MoM)"
+    category: inflation
+    importance: 2
+    unit: "%"
+    linked_series: ["fred:PCEPILFE"]
+    release_time: "08:30"
+    period_rule: prev_month
+    release_names: ["Personal Income and Outlays"]
+    aliases: ["PCE Price Index m/m", "PCE Price Index MoM", "PCE m/m", "Personal Income and Outlays"]
+  - event_key: us.core_pce
+    country: US
+    title: "Core PCE price index (MoM)"
+    category: inflation
+    importance: 3
+    unit: "%"
+    linked_series: ["fred:PCEPILFE"]
+    headline_series: "fred:PCEPILFE"
+    headline_transform: pct
+    release_time: "08:30"
+    period_rule: prev_month
+    aliases: ["Core PCE Price Index m/m", "Core PCE Price Index MoM", "Core PCE m/m"]
+  - event_key: us.nfp
+    country: US
+    title: "Nonfarm payrolls"
+    category: labour
+    importance: 3
+    unit: "k"
+    linked_series: ["fred:PAYEMS", "fred:UNRATE", "fred:CES0500000003"]
+    headline_series: "fred:PAYEMS"
+    headline_transform: diff
+    release_time: "08:30"
+    period_rule: prev_month
+    release_names: ["Employment Situation"]
+    aliases: ["Non-Farm Employment Change", "Nonfarm Payrolls", "NFP", "Non Farm Payrolls", "Employment Situation", "Non-Farm Payrolls"]
+  - event_key: us.unemployment
+    country: US
+    title: "Unemployment rate"
+    category: labour
+    importance: 3
+    unit: "%"
+    linked_series: ["fred:UNRATE"]
+    headline_series: "fred:UNRATE"
+    headline_transform: level
+    release_time: "08:30"
+    period_rule: prev_month
+    aliases: ["Unemployment Rate"]
+  - event_key: us.ahe
+    country: US
+    title: "Average hourly earnings (MoM)"
+    category: labour
+    importance: 2
+    unit: "%"
+    linked_series: ["fred:CES0500000003"]
+    headline_series: "fred:CES0500000003"
+    headline_transform: pct
+    period_rule: prev_month
+    aliases: ["Average Hourly Earnings m/m", "Average Hourly Earnings MoM"]
+  - event_key: us.claims
+    country: US
+    title: "Initial jobless claims"
+    category: labour
+    importance: 2
+    unit: "k"
+    linked_series: ["fred:ICSA"]
+    headline_series: "fred:ICSA"
+    headline_scale: 0.001  # count → thousands
+    headline_transform: level
+    release_time: "08:30"
+    period_rule: prev_week
+    release_names: ["Unemployment Insurance Weekly Claims Report", "Unemployment Insurance Weekly Claims"]
+    aliases: ["Unemployment Claims", "Initial Jobless Claims", "Initial Claims"]
+  - event_key: us.gdp
+    country: US
+    title: "GDP (QoQ SAAR)"
+    category: growth
+    importance: 3
+    unit: "%"
+    linked_series: ["fred:GDPC1", "fred:A191RL1Q225SBEA"]
+    headline_series: "fred:A191RL1Q225SBEA"
+    headline_transform: level
+    release_time: "08:30"
+    period_rule: prev_quarter
+    release_names: ["Gross Domestic Product"]
+    aliases: ["Advance GDP q/q", "Prelim GDP q/q", "Final GDP q/q", "GDP Growth Rate QoQ Adv", "GDP Growth Rate QoQ 2nd Est", "GDP Growth Rate QoQ Final", "GDP Growth Rate QoQ", "Gross Domestic Product", "GDP q/q"]
+  - event_key: us.retail_sales
+    country: US
+    title: "Retail sales (MoM)"
+    category: growth
+    importance: 2
+    unit: "%"
+    linked_series: ["fred:RSAFS"]
+    headline_series: "fred:RSAFS"
+    headline_transform: pct
+    release_time: "08:30"
+    period_rule: prev_month
+    release_names: ["Advance Monthly Sales for Retail and Food Services"]
+    aliases: ["Retail Sales m/m", "Retail Sales MoM", "Advance Monthly Sales for Retail and Food Services", "Retail Sales"]
+  - event_key: us.core_retail_sales
+    country: US
+    title: "Core retail sales (MoM)"
+    category: growth
+    importance: 2
+    unit: "%"
+    period_rule: prev_month
+    aliases: ["Core Retail Sales m/m", "Retail Sales Ex Autos MoM"]
+  - event_key: us.ip
+    country: US
+    title: "Industrial production (MoM)"
+    category: growth
+    importance: 1
+    unit: "%"
+    linked_series: ["fred:INDPRO"]
+    headline_series: "fred:INDPRO"
+    headline_transform: pct
+    release_time: "09:15"
+    period_rule: prev_month
+    release_names: ["G.17 Industrial Production and Capacity Utilization", "Industrial Production and Capacity Utilization"]
+    aliases: ["Industrial Production m/m", "Industrial Production MoM", "Industrial Production"]
+  - event_key: us.ism_mfg
+    country: US
+    title: "ISM manufacturing PMI"
+    category: sentiment
+    importance: 3
+    unit: "index"
+    linked_series: ["manual:ISM_MFG_PMI"]
+    release_time: "10:00"
+    period_rule: prev_month
+    aliases: ["ISM Manufacturing PMI", "ISM Manufacturing"]
+  - event_key: us.ism_svc
+    country: US
+    title: "ISM services PMI"
+    category: sentiment
+    importance: 2
+    unit: "index"
+    release_time: "10:00"
+    period_rule: prev_month
+    aliases: ["ISM Services PMI", "ISM Non-Manufacturing PMI"]
+  - event_key: us.umich
+    country: US
+    title: "UMich consumer sentiment"
+    category: sentiment
+    importance: 2
+    unit: "index"
+    linked_series: ["fred:UMCSENT", "fred:MICH"]
+    headline_series: "fred:UMCSENT"
+    headline_transform: level
+    release_time: "10:00"
+    period_rule: none
+    release_names: ["University of Michigan Surveys of Consumers", "Surveys of Consumers"]
+    aliases: ["Prelim UoM Consumer Sentiment", "Revised UoM Consumer Sentiment", "Michigan Consumer Sentiment Prel", "Michigan Consumer Sentiment Final", "Michigan Consumer Sentiment", "UoM Consumer Sentiment"]
+  - event_key: us.conf_board
+    country: US
+    title: "Conference Board consumer confidence"
+    category: sentiment
+    importance: 2
+    unit: "index"
+    release_time: "10:00"
+    period_rule: none
+    aliases: ["CB Consumer Confidence", "Consumer Confidence"]
+  - event_key: us.housing_starts
+    country: US
+    title: "Housing starts"
+    category: housing
+    importance: 1
+    unit: "mn"
+    linked_series: ["fred:HOUST", "fred:PERMIT"]
+    headline_series: "fred:HOUST"
+    headline_scale: 0.001  # thousands → millions
+    headline_transform: level
+    release_time: "08:30"
+    period_rule: prev_month
+    release_names: ["New Residential Construction"]
+    aliases: ["Housing Starts", "New Residential Construction"]
+  - event_key: us.permits
+    country: US
+    title: "Building permits"
+    category: housing
+    importance: 1
+    unit: "mn"
+    linked_series: ["fred:PERMIT"]
+    headline_series: "fred:PERMIT"
+    headline_scale: 0.001  # thousands → millions
+    headline_transform: level
+    period_rule: prev_month
+    aliases: ["Building Permits", "Building Permits Prel"]
+  - event_key: us.case_shiller
+    country: US
+    title: "S&P/Case-Shiller 20-city HPI (YoY)"
+    category: housing
+    importance: 1
+    unit: "%"
+    linked_series: ["fred:CSUSHPINSA"]
+    period_rule: prev_month
+    aliases: ["S&P/CS Composite-20 HPI y/y", "S&P/Case-Shiller Home Price YoY", "Case Shiller Home Price Index YoY"]
+  - event_key: us.trade_balance
+    country: US
+    title: "Trade balance"
+    category: trade
+    importance: 1
+    unit: "bn"
+    linked_series: ["fred:BOPGSTB"]
+    headline_series: "fred:BOPGSTB"
+    headline_scale: 0.001  # $ millions → $ billions
+    headline_transform: level
+    release_time: "08:30"
+    period_rule: prev_month
+    release_names: ["U.S. International Trade in Goods and Services"]
+    aliases: ["Trade Balance", "Balance of Trade", "U.S. International Trade in Goods and Services"]
+  - event_key: us.fomc
+    country: US
+    title: "FOMC rate decision"
+    category: rates
+    importance: 3
+    kind: cb_decision
+    unit: "%"
+    linked_series: ["fred:DFF"]
+    release_time: "14:00"
+    period_rule: none
+    aliases: ["Federal Funds Rate", "Fed Interest Rate Decision", "FOMC Statement", "FOMC Interest Rate Decision", "Fed Funds Rate"]
+  - event_key: us.fomc_minutes
+    country: US
+    title: "FOMC minutes"
+    category: rates
+    importance: 2
+    kind: cb_minutes
+    period_rule: none
+    aliases: ["FOMC Meeting Minutes", "FOMC Minutes"]
+  - event_key: us.fed_chair
+    country: US
+    title: "Fed Chair speaks"
+    category: rates
+    importance: 2
+    kind: speech
+    period_rule: none
+    aliases: ["Fed Chair Powell Speaks", "Fed Chair Speaks", "Fed Chair Powell Testifies"]
+  - event_key: us.treasury_refunding
+    country: US
+    title: "Treasury quarterly refunding announcement"
+    category: fiscal
+    importance: 2
+    kind: macro
+    period_rule: none
+    aliases: ["Quarterly Refunding Announcement", "Treasury Refunding Announcement"]
+  # ---------------- Israel ----------------
+  - event_key: il.cpi
+    country: IL
+    title: "Israel CPI (MoM)"
+    category: inflation
+    importance: 3
+    unit: "%"
+    linked_series: ["cbs:120010"]
+    headline_series: "cbs:120010"
+    headline_transform: pct
+    period_rule: prev_month
+    release_names: ["Consumer Price Index"]
+    aliases: ["CPI m/m", "CPI MoM", "Inflation Rate MoM", "Consumer Price Index MoM", "CPI"]
+  - event_key: il.cpi_yoy
+    country: IL
+    title: "Israel CPI (YoY)"
+    category: inflation
+    importance: 2
+    unit: "%"
+    linked_series: ["cbs:120010"]
+    headline_series: "cbs:120010"
+    headline_transform: yoy
+    period_rule: prev_month
+    aliases: ["CPI y/y", "CPI YoY", "Inflation Rate YoY"]
+  - event_key: il.ppi
+    country: IL
+    title: "Israel producer price index (MoM)"
+    category: inflation
+    importance: 1
+    unit: "%"
+    period_rule: prev_month
+    aliases: ["PPI m/m", "PPI MoM", "Producer Price Index MoM"]
+  - event_key: il.housing_index
+    country: IL
+    title: "Israel home price index"
+    category: housing
+    importance: 2
+    unit: "%"
+    period_rule: prev_month
+    aliases: ["Home Price Index", "House Price Index", "Housing Price Index"]
+  - event_key: il.gdp
+    country: IL
+    title: "Israel GDP (QoQ SAAR, flash)"
+    category: growth
+    importance: 2
+    unit: "%"
+    period_rule: prev_quarter
+    aliases: ["GDP Growth Rate QoQ Annualized", "GDP Growth Rate Annualized", "GDP Growth Rate QoQ Annualized Prel", "GDP q/q"]
+  - event_key: il.unemployment
+    country: IL
+    title: "Israel unemployment rate"
+    category: labour
+    importance: 2
+    unit: "%"
+    linked_series: ["fred:LRHUTTTTILM156S"]
+    period_rule: prev_month
+    aliases: ["Unemployment Rate"]
+  - event_key: il.boi
+    country: IL
+    title: "Bank of Israel rate decision"
+    category: rates
+    importance: 3
+    kind: cb_decision
+    unit: "%"
+    linked_series: ["boi:BR/MNT_RIB_BOI_D"]
+    release_time: "16:00"
+    period_rule: none
+    aliases: ["Interest Rate Decision", "BoI Interest Rate Decision", "Bank of Israel Interest Rate Decision"]
+  - event_key: il.trade_balance
+    country: IL
+    title: "Israel trade balance"
+    category: trade
+    importance: 1
+    unit: "bn"
+    period_rule: prev_month
+    aliases: ["Balance of Trade", "Trade Balance"]
+  - event_key: il.fx_reserves
+    country: IL
+    title: "Israel FX reserves"
+    category: fiscal
+    importance: 1
+    unit: "bn"
+    period_rule: prev_month
+    aliases: ["Foreign Exchange Reserves"]
+  # ---------------- Euro area ----------------
+  - event_key: ea.hicp_flash
+    country: EA
+    title: "Euro area HICP flash (YoY)"
+    category: inflation
+    importance: 3
+    unit: "%"
+    linked_series: ["fred:CP0000EZ19M086NEST"]
+    period_rule: none
+    aliases: ["CPI Flash Estimate y/y", "Inflation Rate YoY Flash", "Inflation Rate YoY Prel", "Core CPI Flash Estimate y/y", "Inflation Rate YoY", "HICP Flash"]
+  - event_key: ea.ecb
+    country: EA
+    title: "ECB rate decision"
+    category: rates
+    importance: 3
+    kind: cb_decision
+    unit: "%"
+    linked_series: ["fred:ECBDFR"]
+    release_time: "14:15"
+    period_rule: none
+    aliases: ["Main Refinancing Rate", "ECB Interest Rate Decision", "Deposit Facility Rate", "ECB Deposit Facility Rate", "Monetary Policy Statement"]
+  - event_key: ea.ecb_press
+    country: EA
+    title: "ECB press conference"
+    category: rates
+    importance: 3
+    kind: speech
+    period_rule: none
+    aliases: ["ECB Press Conference"]
+  - event_key: ea.gdp
+    country: EA
+    title: "Euro area GDP (QoQ)"
+    category: growth
+    importance: 2
+    unit: "%"
+    period_rule: prev_quarter
+    aliases: ["Flash GDP q/q", "Prelim Flash GDP q/q", "GDP Growth Rate QoQ Flash", "GDP Growth Rate QoQ 2nd Est", "GDP Growth Rate QoQ", "GDP q/q"]
+  - event_key: ea.unemployment
+    country: EA
+    title: "Euro area unemployment rate"
+    category: labour
+    importance: 1
+    unit: "%"
+    linked_series: ["estat:une_rt_m/M.SA.TOTAL.PC_ACT.T.EA21"]
+    period_rule: prev_month
+    aliases: ["Unemployment Rate"]
+  - event_key: ea.pmi_mfg
+    country: EA
+    title: "Euro area manufacturing PMI"
+    category: sentiment
+    importance: 2
+    unit: "index"
+    period_rule: none
+    aliases: ["Flash Manufacturing PMI", "Final Manufacturing PMI", "HCOB Manufacturing PMI Flash", "HCOB Manufacturing PMI", "Manufacturing PMI"]
+  # ---------------- Germany ----------------
+  - event_key: de.cpi
+    country: DE
+    title: "Germany CPI prelim (MoM)"
+    category: inflation
+    importance: 2
+    unit: "%"
+    period_rule: none
+    aliases: ["German Prelim CPI m/m", "Inflation Rate MoM Prel", "Inflation Rate MoM Final", "Inflation Rate MoM", "CPI m/m"]
+  - event_key: de.ifo
+    country: DE
+    title: "Germany Ifo business climate"
+    category: sentiment
+    importance: 2
+    unit: "index"
+    period_rule: none
+    aliases: ["German ifo Business Climate", "Ifo Business Climate"]
+  - event_key: de.zew
+    country: DE
+    title: "Germany ZEW economic sentiment"
+    category: sentiment
+    importance: 2
+    unit: "index"
+    period_rule: none
+    aliases: ["German ZEW Economic Sentiment", "ZEW Economic Sentiment Index", "ZEW Economic Sentiment"]
+  - event_key: de.gdp
+    country: DE
+    title: "Germany GDP (QoQ)"
+    category: growth
+    importance: 2
+    unit: "%"
+    period_rule: prev_quarter
+    aliases: ["German Prelim GDP q/q", "German Final GDP q/q", "GDP Growth Rate QoQ Flash", "GDP Growth Rate QoQ Final", "GDP Growth Rate QoQ"]
+  - event_key: de.pmi_mfg
+    country: DE
+    title: "Germany manufacturing PMI"
+    category: sentiment
+    importance: 2
+    unit: "index"
+    period_rule: none
+    aliases: ["German Flash Manufacturing PMI", "German Final Manufacturing PMI", "HCOB Manufacturing PMI Flash", "HCOB Manufacturing PMI"]
+  # ---------------- United Kingdom ----------------
+  - event_key: gb.cpi
+    country: GB
+    title: "UK CPI (YoY)"
+    category: inflation
+    importance: 3
+    unit: "%"
+    linked_series: ["ons:D7G7/MM23"]
+    period_rule: prev_month
+    aliases: ["CPI y/y", "Inflation Rate YoY", "CPI YoY"]
+  - event_key: gb.boe
+    country: GB
+    title: "Bank of England rate decision"
+    category: rates
+    importance: 3
+    kind: cb_decision
+    unit: "%"
+    linked_series: ["bis:WS_CBPOL/M.GB"]
+    release_time: "12:00"
+    period_rule: none
+    aliases: ["Official Bank Rate", "BoE Interest Rate Decision", "Monetary Policy Summary", "MPC Official Bank Rate Votes"]
+  - event_key: gb.gdp
+    country: GB
+    title: "UK GDP (MoM)"
+    category: growth
+    importance: 2
+    unit: "%"
+    period_rule: prev_month
+    aliases: ["GDP m/m", "GDP MoM", "Prelim GDP q/q", "GDP Growth Rate QoQ Prel", "GDP Growth Rate QoQ"]
+  - event_key: gb.unemployment
+    country: GB
+    title: "UK unemployment rate"
+    category: labour
+    importance: 2
+    unit: "%"
+    period_rule: prev_month
+    aliases: ["Unemployment Rate", "Claimant Count Change"]
+  - event_key: gb.retail_sales
+    country: GB
+    title: "UK retail sales (MoM)"
+    category: growth
+    importance: 2
+    unit: "%"
+    period_rule: prev_month
+    aliases: ["Retail Sales m/m", "Retail Sales MoM"]
+  # ---------------- Japan ----------------
+  - event_key: jp.cpi
+    country: JP
+    title: "Japan national core CPI (YoY)"
+    category: inflation
+    importance: 2
+    unit: "%"
+    linked_series: ["imf:CPI/JPN.CPI._T.IX.M"]
+    period_rule: prev_month
+    aliases: ["National Core CPI y/y", "Core Inflation Rate YoY", "Inflation Rate YoY", "Tokyo Core CPI y/y"]
+  - event_key: jp.boj
+    country: JP
+    title: "Bank of Japan policy decision"
+    category: rates
+    importance: 3
+    kind: cb_decision
+    unit: "%"
+    linked_series: ["bis:WS_CBPOL/M.JP"]
+    period_rule: none
+    aliases: ["BOJ Policy Rate", "BoJ Interest Rate Decision", "Monetary Policy Statement", "BOJ Interest Rate Decision"]
+  - event_key: jp.gdp
+    country: JP
+    title: "Japan GDP (QoQ)"
+    category: growth
+    importance: 2
+    unit: "%"
+    period_rule: prev_quarter
+    aliases: ["Prelim GDP q/q", "Final GDP q/q", "GDP Growth Rate QoQ Prel", "GDP Growth Rate QoQ Final", "GDP Growth Rate QoQ"]
+  - event_key: jp.tankan
+    country: JP
+    title: "Tankan large manufacturers"
+    category: sentiment
+    importance: 2
+    unit: "index"
+    period_rule: prev_quarter
+    aliases: ["Tankan Manufacturing Index", "Tankan Large Manufacturers Index"]
+  # ---------------- China ----------------
+  - event_key: cn.cpi
+    country: CN
+    title: "China CPI (YoY)"
+    category: inflation
+    importance: 2
+    unit: "%"
+    linked_series: ["imf:CPI/CHN.CPI._T.IX.M"]
+    period_rule: prev_month
+    aliases: ["CPI y/y", "Inflation Rate YoY"]
+  - event_key: cn.gdp
+    country: CN
+    title: "China GDP (YoY)"
+    category: growth
+    importance: 3
+    unit: "%"
+    period_rule: prev_quarter
+    aliases: ["GDP q/y", "GDP Growth Rate YoY", "GDP Growth Rate QoQ"]
+  - event_key: cn.pmi_mfg
+    country: CN
+    title: "China NBS manufacturing PMI"
+    category: sentiment
+    importance: 2
+    unit: "index"
+    period_rule: prev_month
+    aliases: ["Manufacturing PMI", "NBS Manufacturing PMI", "Caixin Manufacturing PMI", "RatingDog Manufacturing PMI"]
+  - event_key: cn.ip
+    country: CN
+    title: "China industrial production (YoY)"
+    category: growth
+    importance: 2
+    unit: "%"
+    period_rule: prev_month
+    aliases: ["Industrial Production y/y", "Industrial Production YoY"]
+  - event_key: cn.retail_sales
+    country: CN
+    title: "China retail sales (YoY)"
+    category: growth
+    importance: 2
+    unit: "%"
+    period_rule: prev_month
+    aliases: ["Retail Sales y/y", "Retail Sales YoY"]
+  - event_key: cn.trade_balance
+    country: CN
+    title: "China trade balance"
+    category: trade
+    importance: 2
+    unit: "bn"
+    period_rule: prev_month
+    aliases: ["Trade Balance", "Balance of Trade", "USD-Denominated Trade Balance"]
+  - event_key: cn.lpr
+    country: CN
+    title: "China loan prime rate"
+    category: rates
+    importance: 2
+    kind: cb_decision
+    unit: "%"
+    linked_series: ["bis:WS_CBPOL/M.CN"]
+    period_rule: none
+    aliases: ["Loan Prime Rate 1Y", "1-y Loan Prime Rate", "Loan Prime Rate 5Y", "5-y Loan Prime Rate"]
+  # ---------------- Canada ----------------
+  - event_key: ca.boc
+    country: CA
+    title: "Bank of Canada rate decision"
+    category: rates
+    importance: 3
+    kind: cb_decision
+    unit: "%"
+    linked_series: ["bis:WS_CBPOL/M.CA"]
+    release_time: "09:45"
+    period_rule: none
+    aliases: ["Overnight Rate", "BoC Interest Rate Decision", "BoC Rate Statement"]
+  - event_key: ca.cpi
+    country: CA
+    title: "Canada CPI (MoM)"
+    category: inflation
+    importance: 3
+    unit: "%"
+    period_rule: prev_month
+    aliases: ["CPI m/m", "Inflation Rate MoM", "CPI MoM"]
+  - event_key: ca.employment
+    country: CA
+    title: "Canada employment change"
+    category: labour
+    importance: 3
+    unit: "k"
+    period_rule: prev_month
+    aliases: ["Employment Change", "Unemployment Rate"]
+  - event_key: ca.gdp
+    country: CA
+    title: "Canada GDP (MoM)"
+    category: growth
+    importance: 2
+    unit: "%"
+    period_rule: prev_month
+    aliases: ["GDP m/m", "GDP MoM", "GDP Growth Rate QoQ"]
+  # ---------------- Switzerland ----------------
+  - event_key: ch.snb
+    country: CH
+    title: "SNB policy rate decision"
+    category: rates
+    importance: 3
+    kind: cb_decision
+    unit: "%"
+    linked_series: ["bis:WS_CBPOL/M.CH"]
+    release_time: "09:30"
+    period_rule: none
+    aliases: ["SNB Policy Rate", "SNB Interest Rate Decision", "SNB Monetary Policy Assessment"]
+  - event_key: ch.cpi
+    country: CH
+    title: "Switzerland CPI (MoM)"
+    category: inflation
+    importance: 2
+    unit: "%"
+    period_rule: prev_month
+    aliases: ["CPI m/m", "Inflation Rate MoM", "CPI MoM"]
+  # ---------------- Australia ----------------
+  - event_key: au.rba
+    country: AU
+    title: "RBA cash rate decision"
+    category: rates
+    importance: 3
+    kind: cb_decision
+    unit: "%"
+    linked_series: ["bis:WS_CBPOL/M.AU"]
+    release_time: "14:30"
+    period_rule: none
+    aliases: ["Cash Rate", "RBA Interest Rate Decision", "RBA Rate Statement"]
+  - event_key: au.cpi
+    country: AU
+    title: "Australia CPI (QoQ)"
+    category: inflation
+    importance: 3
+    unit: "%"
+    period_rule: prev_quarter
+    aliases: ["CPI q/q", "Inflation Rate QoQ", "CPI y/y", "Monthly CPI Indicator", "Inflation Rate YoY"]
+  - event_key: au.employment
+    country: AU
+    title: "Australia employment change"
+    category: labour
+    importance: 3
+    unit: "k"
+    period_rule: prev_month
+    aliases: ["Employment Change", "Unemployment Rate"]

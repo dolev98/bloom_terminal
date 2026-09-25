@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# Node
+node_modules/
+frontend/dist/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# App data (SQLite, Parquet, caches, PDFs, backups)
+data/
+!data/.gitkeep
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/

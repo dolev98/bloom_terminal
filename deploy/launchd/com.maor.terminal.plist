@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Install: cp deploy/launchd/com.maor.terminal.plist ~/Library/LaunchAgents/ && launchctl load ~/Library/LaunchAgents/com.maor.terminal.plist
+     The backend resumes with the laptop; the wake-detector job runs a catch-up refresh after sleep. -->
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.maor.terminal</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/opt/homebrew/bin/uv</string>
+    <string>run</string>
+    <string>uvicorn</string>
+    <string>app.main:app</string>
+    <string>--app-dir</string><string>backend</string>
+    <string>--host</string><string>127.0.0.1</string>
+    <string>--port</string><string>8710</string>
+  </array>
+  <key>WorkingDirectory</key><string>/Users/dolevabudi/maor-project</string>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>StandardOutPath</key><string>/Users/dolevabudi/maor-project/data/terminal.log</string>
+  <key>StandardErrorPath</key><string>/Users/dolevabudi/maor-project/data/terminal.log</string>
+  <key>EnvironmentVariables</key>
+  <dict><key>PATH</key><string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string></dict>
+</dict>
+</plist>

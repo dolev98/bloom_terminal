@@ -1,0 +1,568 @@
+# Seeded correlation pairs. `transform_*: null` = use the series' catalog default (price/level_index → log_ret,
+# yield/spread → diff_bp, survey/rate levels → diff, stocks → yoy). `freq: auto` = coarsest native frequency.
+# `lag_b: k` pairs A_t with B_{t-k} (k>0 → B leads A). Bare tickers (SPY, TA35.TA, GC=F) resolve to OHLCV closes.
+pairs:
+  # ---------------------------------------------------------------- US: equities vs rates / vol / credit
+  - id: us_spx_dgs10
+    name: "S&P 500 vs US 10Y yield"
+    a: "fred:SP500"
+    b: "fred:DGS10"
+    transform_a: log_ret
+    transform_b: diff_bp
+    country: US
+    tags: [equity, rates]
+    rationale: "Stock–bond correlation flips sign with the inflation regime: positive (yields up = growth) in low-inflation eras, negative (yields up = tightening) when inflation dominates. Watch the rolling window."
+  - id: us_spx_vix
+    name: "S&P 500 vs VIX"
+    a: "fred:SP500"
+    b: "fred:VIXCLS"
+    transform_a: log_ret
+    transform_b: log_ret
+    country: US
+    tags: [equity, vol]
+    rationale: "Strongly negative by construction (implied vol rises on drawdowns). A weakening in the rolling correlation signals a complacent or dislocated vol market."
+  - id: us_spx_hy_oas
+    name: "S&P 500 vs HY OAS"
+    a: "fred:SP500"
+    b: "fred:BAMLH0A0HYM2"
+    transform_a: log_ret
+    transform_b: diff_bp
+    country: US
+    tags: [equity, credit]
+    rationale: "Credit spreads and equities price the same default/growth risk; HY OAS widening without equity weakness is an early warning."
+  - id: us_ndx_real_yield
+    name: "NASDAQ vs 10Y real yield"
+    a: "fred:NASDAQCOM"
+    b: "fred:DFII10"
+    transform_a: log_ret
+    transform_b: diff_bp
+    country: US
+    tags: [equity, rates, real]
+    rationale: "Long-duration growth equity is most sensitive to real discount rates; 2022 was the canonical real-yield-up / NDX-down episode."
+  - id: us_dff_dgs2
+    name: "Fed funds vs 2Y yield"
+    a: "fred:DFF"
+    b: "fred:DGS2"
+    transform_a: diff_bp
+    transform_b: diff_bp
+    country: US
+    tags: [rates, policy]
+    rationale: "The 2Y anticipates the policy path; 2Y minus DFF is a market-implied stance gauge. Use lead/lag: the 2Y should lead DFF."
+  - id: us_breakeven_wti
+    name: "10Y breakeven vs WTI"
+    a: "fred:T10YIE"
+    b: "fred:DCOILWTICO"
+    transform_a: diff_bp
+    transform_b: log_ret
+    country: US
+    tags: [inflation, commodity]
+    rationale: "Oil is the most visible inflation input; breakevens track crude at the margin especially in the 5Y tenor."
+  - id: us_real_yield_gold
+    name: "10Y real yield vs gold (invert)"
+    a: "fred:DFII10"
+    b: "GC=F"
+    transform_a: diff_bp
+    transform_b: log_ret
+    country: US
+    tags: [rates, gold, invert]
+    rationale: "Gold is a zero-coupon real asset: higher real yields raise its opportunity cost → expect negative correlation (toggle 'invert B'). The relationship broke down in 2022–24 amid central-bank buying."
+  - id: us_usd_gold
+    name: "Broad USD vs gold"
+    a: "fred:DTWEXBGS"
+    b: "GC=F"
+    transform_a: log_ret
+    transform_b: log_ret
+    country: US
+    tags: [fx, gold]
+    rationale: "Gold is priced in dollars; a stronger USD mechanically lowers the USD gold price — negative correlation expected."
+  - id: us_usd_eem
+    name: "Broad USD vs EM equities (EEM)"
+    a: "fred:DTWEXBGS"
+    b: "EEM"
+    transform_a: log_ret
+    transform_b: log_ret
+    country: US
+    tags: [fx, em]
+    rationale: "USD strength tightens EM financial conditions (dollar debt, capital outflows) → negative correlation with EM equities."
+  - id: us_copper_gold_dgs10
+    name: "Copper vs 10Y yield (copper/gold ratio proxy)"
+    a: "HG=F"
+    b: "fred:DGS10"
+    transform_a: log_ret
+    transform_b: diff_bp
+    country: US
+    tags: [commodity, rates, growth]
+    rationale: "Gundlach's copper/gold ratio tracks the 10Y yield (growth vs fear). No derived ratio series exists in the catalog yet — this pair uses copper alone; add derived:HG_GC_RATIO once yf:HG=F:close and yf:GC=F:close are catalogued."
+  - id: us_wti_cad
+    name: "WTI vs CAD per USD"
+    a: "fred:DCOILWTICO"
+    b: "fred:DEXCAUS"
+    transform_a: log_ret
+    transform_b: log_ret
+    country: US
+    tags: [commodity, fx]
+    rationale: "Canada is an oil exporter: higher crude → stronger CAD → fewer CAD per USD (negative correlation with DEXCAUS)."
+  - id: us_cl_xle
+    name: "Crude futures vs energy sector (XLE)"
+    a: "CL=F"
+    b: "XLE"
+    transform_a: log_ret
+    transform_b: log_ret
+    country: US
+    tags: [commodity, equity, sector]
+    rationale: "Energy equities are a levered, lagging claim on crude; beta and rolling correlation show when producers decouple (capital discipline)."
+  - id: us_btc_qqq
+    name: "Bitcoin vs NASDAQ-100 (QQQ)"
+    a: "BTC-USD"
+    b: "QQQ"
+    transform_a: log_ret
+    transform_b: log_ret
+    country: US
+    tags: [crypto, equity]
+    rationale: "Since 2020 BTC has traded as a high-beta risk asset correlated with tech; a falling rolling correlation would support the 'digital gold' thesis."
+  - id: us_btc_net_liq
+    name: "Bitcoin vs Fed net liquidity"
+    a: "BTC-USD"
+    b: "derived:NET_LIQ_BN"
+    transform_a: log_ret
+    transform_b: diff
+    freq: 1w
+    country: US
+    tags: [crypto, liquidity]
+    rationale: "Net liquidity (Fed assets − TGA − RRP) is the popular liquidity gauge for crypto; weekly changes, test lags 0–4 weeks."
+  - id: us_sox_qqq
+    name: "Semis (SOX) vs NASDAQ-100"
+    a: "^SOX"
+    b: "QQQ"
+    transform_a: log_ret
+    transform_b: log_ret
+    country: US
+    tags: [equity, sector]
+    rationale: "Semis are the highest-beta cyclical inside tech; a beta > 1.3 with weakening correlation flags a sector-specific move."
+  - id: us_xlf_curve
+    name: "Financials (XLF) vs 2s10s (bp)"
+    a: "XLF"
+    b: "derived:US2S10S_BP"
+    transform_a: log_ret
+    transform_b: diff
+    country: US
+    tags: [equity, sector, curve]
+    rationale: "Bank NIM benefits from a steeper curve; steepening should coincide with XLF outperformance."
+  - id: us_xlu_dgs10
+    name: "Utilities (XLU) vs 10Y yield"
+    a: "XLU"
+    b: "fred:DGS10"
+    transform_a: log_ret
+    transform_b: diff_bp
+    country: US
+    tags: [equity, sector, rates]
+    rationale: "Utilities are bond proxies: expect negative correlation with yield changes; a positive turn suggests growth (AI power demand) is driving the sector."
+  - id: us_xle_wti
+    name: "Energy (XLE) vs WTI spot"
+    a: "XLE"
+    b: "fred:DCOILWTICO"
+    transform_a: log_ret
+    transform_b: log_ret
+    country: US
+    tags: [equity, sector, commodity]
+    rationale: "Same thesis as CL=F vs XLE but with the FRED spot series (T+1 lag) — useful to test a 1-day lag_b."
+  - id: us_xlre_mortgage
+    name: "Real estate (XLRE) vs 30Y mortgage rate"
+    a: "XLRE"
+    b: "fred:MORTGAGE30US"
+    transform_a: log_ret
+    transform_b: diff_bp
+    freq: 1w
+    country: US
+    tags: [equity, sector, housing]
+    rationale: "REITs are rate-sensitive and housing demand is mortgage-rate sensitive; weekly grid because the Freddie Mac survey is weekly."
+  - id: us_tlt_spy
+    name: "Long bonds (TLT) vs S&P 500 (SPY)"
+    a: "TLT"
+    b: "SPY"
+    transform_a: log_ret
+    transform_b: log_ret
+    country: US
+    tags: [equity, bonds, 60_40]
+    rationale: "The 60/40 diversification question: negative correlation = bonds hedge equities; positive (2022) = both sell off on inflation."
+  - id: us_usdjpy_dgs10
+    name: "USD/JPY vs US 10Y yield"
+    a: "fred:DEXJPUS"
+    b: "fred:DGS10"
+    transform_a: log_ret
+    transform_b: diff_bp
+    country: US
+    tags: [fx, rates, carry]
+    rationale: "USD/JPY is driven by the US–Japan rate differential; with BoJ pinned, US yields dominate. A breakdown signals intervention or BoJ regime change."
+  - id: us_eurusd_dgs2
+    name: "EUR/USD vs US 2Y yield"
+    a: "fred:DEXUSEU"
+    b: "fred:DGS2"
+    transform_a: log_ret
+    transform_b: diff_bp
+    country: US
+    tags: [fx, rates]
+    rationale: "Front-end US rates drive the dollar; expect negative correlation (higher US 2Y → stronger USD → lower EUR/USD)."
+  - id: us_spx_net_liq
+    name: "S&P 500 vs Fed net liquidity (levels, cointegration)"
+    a: "fred:SP500"
+    b: "derived:NET_LIQ_BN"
+    transform_a: level
+    transform_b: level
+    freq: 1w
+    country: US
+    tags: [equity, liquidity, cointegration]
+    rationale: "The 'liquidity drives stocks' thesis is a levels claim — test it with cointegration (Engle–Granger/Johansen) rather than a spurious level correlation."
+  - id: us_spx_m2
+    name: "S&P 500 vs M2 (monthly YoY)"
+    a: "fred:SP500"
+    b: "fred:M2SL"
+    transform_a: yoy
+    transform_b: yoy
+    freq: 1mo
+    country: US
+    tags: [equity, liquidity, monthly]
+    rationale: "Money growth and equity returns on a monthly YoY basis; M2 is published with a ~25-day lag (enable pub_lag for as-known alignment)."
+  - id: us_claims_hy
+    name: "Initial claims vs HY OAS"
+    a: "fred:ICSA"
+    b: "fred:BAMLH0A0HYM2"
+    transform_a: pct
+    transform_b: diff_bp
+    freq: 1w
+    country: US
+    tags: [labour, credit]
+    rationale: "Rising claims precede defaults; HY spreads should widen when claims trend up. Test whether claims lead spreads by 1–4 weeks."
+  - id: us_umcsent_spx
+    name: "UMich sentiment vs S&P 500 (monthly YoY)"
+    a: "fred:UMCSENT"
+    b: "fred:SP500"
+    transform_a: diff
+    transform_b: yoy
+    freq: 1mo
+    country: US
+    tags: [sentiment, equity, monthly]
+    rationale: "Consumer sentiment is partly a function of the stock market and gasoline prices; contrarian at extremes."
+  - id: us_ism_spx
+    name: "ISM manufacturing PMI vs S&P 500 (monthly YoY)"
+    a: "manual:ISM_MFG_PMI"
+    b: "fred:SP500"
+    transform_a: diff
+    transform_b: yoy
+    freq: 1mo
+    country: US
+    tags: [activity, equity, monthly]
+    rationale: "Equity YoY returns lead the ISM by ~3–6 months (markets discount the cycle); check negative lags in the lead/lag chart."
+  - id: us_curve_recession
+    name: "3m10y spread vs NBER recession flag"
+    a: "fred:T10Y3M"
+    b: "fred:USREC"
+    transform_a: level
+    transform_b: level
+    freq: 1mo
+    country: US
+    tags: [curve, recession, monthly]
+    rationale: "The inverted 3m10y is the classic recession predictor (Estrella–Mishkin) with a 12–18 month lead; use lag_b ≈ 12–18 months."
+  # ---------------------------------------------------------------- US: extra macro / cross-asset
+  - id: us_vix_hy
+    name: "VIX vs HY OAS"
+    a: "fred:VIXCLS"
+    b: "fred:BAMLH0A0HYM2"
+    transform_a: log_ret
+    transform_b: diff_bp
+    country: US
+    tags: [vol, credit]
+    rationale: "Equity vol and credit spreads co-move; divergence (VIX calm, spreads widening) is a cross-asset stress signal."
+  - id: us_dgs2_dgs10
+    name: "2Y vs 10Y yield changes"
+    a: "fred:DGS2"
+    b: "fred:DGS10"
+    transform_a: diff_bp
+    transform_b: diff_bp
+    country: US
+    tags: [rates, curve]
+    rationale: "Front-end vs long-end co-movement; a beta of 10Y on 2Y well below 1 means bull/bear steepening is dominating."
+  - id: us_gold_breakeven
+    name: "Gold vs 10Y breakeven"
+    a: "GC=F"
+    b: "fred:T10YIE"
+    transform_a: log_ret
+    transform_b: diff_bp
+    country: US
+    tags: [gold, inflation]
+    rationale: "Gold as an inflation hedge: should correlate with breakevens; the real-yield link (DFII10) is usually stronger."
+  - id: us_spy_ig
+    name: "SPY vs IG OAS"
+    a: "SPY"
+    b: "fred:BAMLC0A0CM"
+    transform_a: log_ret
+    transform_b: diff_bp
+    country: US
+    tags: [equity, credit, ig]
+    rationale: "Investment-grade spreads are less equity-like than HY; use as a check on the HY pair."
+  - id: us_iwm_dgs2
+    name: "Small caps (IWM) vs 2Y yield"
+    a: "IWM"
+    b: "fred:DGS2"
+    transform_a: log_ret
+    transform_b: diff_bp
+    country: US
+    tags: [equity, rates]
+    rationale: "Small caps carry floating-rate debt and are most exposed to the front end of the curve."
+  - id: us_sofr_dff
+    name: "SOFR vs Fed funds"
+    a: "fred:SOFR"
+    b: "fred:DFF"
+    transform_a: diff_bp
+    transform_b: diff_bp
+    country: US
+    tags: [rates, money_market]
+    rationale: "Funding-market plumbing: SOFR should track DFF; a persistent SOFR premium signals reserve scarcity (Sept 2019)."
+  - id: us_brent_wti
+    name: "Brent vs WTI"
+    a: "fred:DCOILBRENTEU"
+    b: "fred:DCOILWTICO"
+    transform_a: log_ret
+    transform_b: log_ret
+    country: US
+    tags: [commodity, oil]
+    rationale: "Near-perfect correlation; the spread (levels → cointegration) tracks US export capacity and freight."
+  - id: us_nfci_spx
+    name: "Chicago Fed NFCI vs S&P 500 (weekly)"
+    a: "fred:NFCI"
+    b: "fred:SP500"
+    transform_a: diff
+    transform_b: log_ret
+    freq: 1w
+    country: US
+    tags: [stress, equity, weekly]
+    rationale: "Financial conditions tightening (NFCI up) should coincide with equity drawdowns; NFCI includes equity vol so partly circular."
+  - id: us_cpi_dgs10
+    name: "CPI YoY vs 10Y yield (monthly)"
+    a: "fred:CPIAUCSL"
+    b: "fred:DGS10"
+    transform_a: yoy
+    transform_b: diff_bp
+    freq: 1mo
+    country: US
+    tags: [inflation, rates, monthly]
+    rationale: "Inflation surprises move long yields; CPI is published ~13 days after month-end (enable pub_lag for real-time alignment)."
+  - id: us_unrate_spx
+    name: "Unemployment rate vs S&P 500 (monthly)"
+    a: "fred:UNRATE"
+    b: "fred:SP500"
+    transform_a: diff
+    transform_b: yoy
+    freq: 1mo
+    country: US
+    tags: [labour, equity, monthly]
+    rationale: "Rising unemployment lags the equity peak; useful with negative lags (equities lead)."
+  - id: us_payrolls_dgs2
+    name: "Nonfarm payrolls change vs 2Y yield (monthly)"
+    a: "fred:PAYEMS"
+    b: "fred:DGS2"
+    transform_a: diff
+    transform_b: diff_bp
+    freq: 1mo
+    country: US
+    tags: [labour, rates, monthly]
+    rationale: "Payroll strength reprices the Fed path; strongest at the 2Y tenor."
+  - id: us_ecb_fed
+    name: "ECB deposit rate vs Fed funds"
+    a: "fred:ECBDFR"
+    b: "fred:DFF"
+    transform_a: diff_bp
+    transform_b: diff_bp
+    freq: 1mo
+    country: EA
+    tags: [rates, policy, monthly]
+    rationale: "Policy-cycle synchronisation; Granger test whether the Fed leads the ECB."
+  - id: ea_bund_eurusd
+    name: "Germany 10Y vs EUR/USD (monthly)"
+    a: "fred:IRLTLT01DEM156N"
+    b: "fred:DEXUSEU"
+    transform_a: diff_bp
+    transform_b: log_ret
+    freq: 1mo
+    country: EA
+    tags: [rates, fx, monthly]
+    rationale: "Bund yields vs the euro; the Bund–UST differential (not yet a derived series) is the cleaner driver."
+  - id: us_walcl_spx
+    name: "Fed balance sheet vs S&P 500 (weekly)"
+    a: "fred:WALCL"
+    b: "fred:SP500"
+    transform_a: pct
+    transform_b: log_ret
+    freq: 1w
+    country: US
+    tags: [liquidity, equity, weekly]
+    rationale: "QE/QT vs equities on a weekly change basis; the levels version belongs in the cointegration pair."
+  - id: us_rrp_spx
+    name: "Reverse repo balance vs S&P 500"
+    a: "fred:RRPONTSYD"
+    b: "fred:SP500"
+    transform_a: diff
+    transform_b: log_ret
+    country: US
+    tags: [liquidity, equity]
+    rationale: "RRP drawdowns release liquidity into bills/risk assets; daily changes are noisy — use a weekly grid."
+  - id: us_dgs10_mortgage
+    name: "10Y yield vs 30Y mortgage rate (weekly)"
+    a: "fred:DGS10"
+    b: "fred:MORTGAGE30US"
+    transform_a: diff_bp
+    transform_b: diff_bp
+    freq: 1w
+    country: US
+    tags: [rates, housing, weekly]
+    rationale: "Mortgage rates follow the 10Y with a lag; the levels spread (cointegration) measures the MBS/prepayment premium."
+  - id: us_sahm_spx
+    name: "Sahm rule vs S&P 500 (monthly)"
+    a: "fred:SAHMREALTIME"
+    b: "fred:SP500"
+    transform_a: diff
+    transform_b: yoy
+    freq: 1mo
+    country: US
+    tags: [labour, recession, monthly]
+    rationale: "Sahm triggers (≥0.5) mark recession starts; check conditional correlation in the recession regime."
+  # ---------------------------------------------------------------- Israel (first-class)
+  - id: il_usdils_qqq
+    name: "USD/ILS vs NASDAQ-100 (QQQ)"
+    a: "boi:EXR/RER_USD_ILS"
+    b: "QQQ"
+    transform_a: log_ret
+    transform_b: log_ret
+    lag_b: 1
+    country: IL
+    tags: [fx, ils, equity, hedging]
+    rationale: "Israeli institutions (pension/provident funds) hedge foreign equity exposure: when the NDX rises they sell USD to rebalance hedges → shekel strengthens (USD/ILS falls). QQQ closes after the BoI fixing, so test lag 0 and +1 (B leads by a day)."
+  - id: il_usdils_spy
+    name: "USD/ILS vs S&P 500 (SPY)"
+    a: "boi:EXR/RER_USD_ILS"
+    b: "SPY"
+    transform_a: log_ret
+    transform_b: log_ret
+    lag_b: 1
+    country: IL
+    tags: [fx, ils, equity, hedging]
+    rationale: "Same hedging-flow mechanism as the QQQ pair; the S&P 500 is the benchmark most Israeli funds hedge against."
+  - id: il_usdils_ta35
+    name: "USD/ILS vs TA-35"
+    a: "boi:EXR/RER_USD_ILS"
+    b: "TA35.TA"
+    transform_a: log_ret
+    transform_b: log_ret
+    country: IL
+    tags: [fx, ils, equity]
+    rationale: "Domestic risk appetite: foreign inflows into TASE strengthen the shekel; geopolitical shocks weaken both (negative correlation)."
+  - id: il_boi_fed_diff_usdils
+    name: "BoI − Fed rate differential vs USD/ILS"
+    a: "derived:BOI_FED_DIFF"
+    b: "boi:EXR/RER_USD_ILS"
+    transform_a: diff
+    transform_b: log_ret
+    country: IL
+    tags: [rates, fx, ils, carry]
+    rationale: "Carry: a wider BoI−Fed differential should support the shekel (negative correlation with USD/ILS). Daily changes are sparse — try weekly."
+  - id: il_ta35_spy_weekly
+    name: "TA-35 vs S&P 500 (weekly)"
+    a: "TA35.TA"
+    b: "SPY"
+    transform_a: log_ret
+    transform_b: log_ret
+    freq: 1w
+    country: IL
+    tags: [equity, weekly]
+    rationale: "TASE closes (17:25 IL) before the US session ends, so daily TASE moves react to the previous US day; weekly (Friday-labelled) returns avoid that lag and holiday mismatches. Israel beta to global equities is typically 0.5–0.7."
+  - id: il_ta125_spy
+    name: "TA-125 vs S&P 500"
+    a: "^TA125.TA"
+    b: "SPY"
+    transform_a: log_ret
+    transform_b: log_ret
+    freq: 1w
+    country: IL
+    tags: [equity, weekly]
+    rationale: "Broader Israeli index vs US; compare with the TA-35 pair to see whether mid-caps carry more local (idiosyncratic) risk."
+  - id: il_10y_spread_usdils
+    name: "IL−US 10Y spread vs USD/ILS (monthly)"
+    a: "derived:IL_US_10Y_SPREAD_M"
+    b: "boi:EXR/RER_USD_ILS"
+    transform_a: diff
+    transform_b: log_ret
+    freq: 1mo
+    country: IL
+    tags: [rates, fx, ils, monthly]
+    rationale: "Sovereign risk premium: a widening Israel–US yield spread (fiscal/geopolitical risk) coincides with shekel weakness."
+  - id: il_10y_us_10y
+    name: "Israel 10Y vs US 10Y (monthly)"
+    a: "fred:IRLTLT01ILM156N"
+    b: "fred:DGS10"
+    transform_a: diff_bp
+    transform_b: diff_bp
+    freq: 1mo
+    country: IL
+    tags: [rates, monthly]
+    rationale: "How much of Israeli long-rate movement is imported from the US; a beta near 1 means little local risk pricing."
+  - id: il_teva_dual
+    name: "TEVA.TA vs TEVA (dual listing)"
+    a: "TEVA.TA"
+    b: "TEVA"
+    transform_a: log_ret
+    transform_b: log_ret
+    country: IL
+    tags: [equity, dual_listing, arbitrage]
+    rationale: "Dual-listed arbitrage: the TASE line trades in ILS during Israeli hours; the gap vs the NYSE close is USD/ILS plus a time-zone effect. Levels → cointegration should be strong."
+  - id: il_nice_dual
+    name: "NICE.TA vs NICE (dual listing)"
+    a: "NICE.TA"
+    b: "NICE"
+    transform_a: log_ret
+    transform_b: log_ret
+    country: IL
+    tags: [equity, dual_listing, arbitrage]
+    rationale: "Same dual-listing mechanism as TEVA; lag +1 captures NASDAQ's close feeding the next TASE session."
+  - id: il_eslt_dual
+    name: "ESLT.TA vs ESLT (dual listing)"
+    a: "ESLT.TA"
+    b: "ESLT"
+    transform_a: log_ret
+    transform_b: log_ret
+    country: IL
+    tags: [equity, dual_listing, defence]
+    rationale: "Elbit dual listing; defence names react to geopolitical news during Israeli hours first."
+  - id: il_unemp_ta35
+    name: "Israel unemployment vs TA-35 (monthly)"
+    a: "fred:LRHUTTTTILM156S"
+    b: "TA35.TA"
+    transform_a: diff
+    transform_b: yoy
+    freq: 1mo
+    country: IL
+    tags: [labour, equity, monthly]
+    rationale: "Domestic cycle vs the local equity index; labour data lag equities, so expect the best correlation at negative lags (B leads)."
+  - id: il_boi_rate_usdils
+    name: "BoI policy rate vs USD/ILS"
+    a: "boi:BR/MNT_RIB_BOI_D"
+    b: "boi:EXR/RER_USD_ILS"
+    transform_a: diff_bp
+    transform_b: log_ret
+    freq: 1w
+    country: IL
+    tags: [rates, fx, ils, policy]
+    rationale: "Policy-rate changes are discrete steps; weekly grid so hikes/cuts align with the shekel's reaction week."
+  - id: il_ta125_qqq
+    name: "TA-125 vs NASDAQ-100 (weekly)"
+    a: "^TA125.TA"
+    b: "QQQ"
+    transform_a: log_ret
+    transform_b: log_ret
+    freq: 1w
+    country: IL
+    tags: [equity, tech, weekly]
+    rationale: "Israeli tech weighting in TA-125 vs US tech; a rising correlation shows TASE trading as a NASDAQ satellite."
+
+# Seed pairs removed from the catalog; deleted from the DB on startup (user-made pairs are never touched).
+retired:
+  - il_chkp_dual  # Check Point is listed only on Nasdaq — there is no CHKP.TA
