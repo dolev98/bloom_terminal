@@ -1,0 +1,69 @@
+# Seed series catalog. Loaded on first run (rows are never overwritten if they already exist in SQLite).
+# series_id = provider:key[:field]. Frequencies: 1d 1w 1mo 1q 1y. value_kind drives the default transform.
+series:
+  # --- US rates & curve (FRED) ---
+  - {series_id: "fred:DGS10", name: "US 10Y Treasury yield", freq: 1d, unit: pct, value_kind: yield, country: US, category: rates, tags: [us, rates, curve], plausible_min: -1, plausible_max: 25}
+  - {series_id: "fred:DGS2", name: "US 2Y Treasury yield", freq: 1d, unit: pct, value_kind: yield, country: US, category: rates, tags: [us, rates, curve], plausible_min: -1, plausible_max: 25}
+  - {series_id: "fred:DGS3MO", name: "US 3M Treasury yield", freq: 1d, unit: pct, value_kind: yield, country: US, category: rates, tags: [us, rates], plausible_min: -1, plausible_max: 25}
+  - {series_id: "fred:T10Y2Y", name: "US yield curve: 10-year minus 2-year (FRED, %)", freq: 1d, unit: pct, value_kind: spread, country: US, category: rates, tags: [us, curve], plausible_min: -5, plausible_max: 5}
+  - {series_id: "fred:T10Y3M", name: "US yield curve: 10-year minus 3-month (%)", freq: 1d, unit: pct, value_kind: spread, country: US, category: rates, tags: [us, curve]}
+  - {series_id: "fred:DFII10", name: "US 10-year real yield (inflation-protected, TIPS)", freq: 1d, unit: pct, value_kind: yield, country: US, category: rates, tags: [us, real]}
+  - {series_id: "fred:T10YIE", name: "US 10-year inflation expectation (breakeven)", freq: 1d, unit: pct, value_kind: yield, country: US, category: inflation, tags: [us, breakeven]}
+  - {series_id: "fred:T5YIE", name: "US 5-year inflation expectation (breakeven)", freq: 1d, unit: pct, value_kind: yield, country: US, category: inflation, tags: [us, breakeven]}
+  - {series_id: "fred:DFF", name: "Fed funds rate (effective)", freq: 1d, unit: pct, value_kind: yield, country: US, category: rates, tags: [us, policy]}
+  - {series_id: "fred:MORTGAGE30US", name: "US 30-year mortgage rate", freq: 1w, unit: pct, value_kind: yield, country: US, category: rates, tags: [us, housing]}
+  # --- credit & vol ---
+  - {series_id: "fred:BAMLH0A0HYM2", name: "US high-yield corporate bond spread (ICE BofA)", freq: 1d, unit: pct, value_kind: spread, country: US, category: credit, tags: [us, credit, hy], license_note: "ICE BofA: personal use only (FRED third-party)"}
+  - {series_id: "fred:BAMLC0A0CM", name: "US investment-grade corporate bond spread (ICE BofA)", freq: 1d, unit: pct, value_kind: spread, country: US, category: credit, tags: [us, credit, ig], license_note: "ICE BofA: personal use only (FRED third-party)"}
+  - {series_id: "fred:VIXCLS", name: "VIX volatility index (Cboe)", freq: 1d, unit: index, value_kind: level_index, country: US, category: vol, tags: [us, vol], plausible_min: 5, plausible_max: 120, license_note: "Cboe: citation required"}
+  # --- equity / fx / commodities (licensed, T+1) ---
+  - {series_id: "fred:SP500", name: "S&P 500 index (daily close, FRED)", freq: 1d, unit: index, value_kind: level_index, country: US, category: equity, tags: [us, equity], license_note: "S&P DJI via FRED: personal use"}
+  - {series_id: "fred:NASDAQCOM", name: "Nasdaq Composite index (daily close, FRED)", freq: 1d, unit: index, value_kind: level_index, country: US, category: equity, tags: [us, equity]}
+  - {series_id: "fred:DTWEXBGS", name: "US dollar vs major trading partners (broad index)", freq: 1d, unit: index, value_kind: level_index, country: US, category: fx, tags: [usd, dxy]}
+  - {series_id: "fred:DEXUSEU", name: "Euro in US dollars", freq: 1d, unit: usd, value_kind: price, country: US, category: fx, tags: [eur]}
+  - {series_id: "fred:DEXJPUS", name: "US dollar in Japanese yen", freq: 1d, unit: jpy, value_kind: price, country: US, category: fx, tags: [jpy]}
+  - {series_id: "fred:DEXCAUS", name: "US dollar in Canadian dollars", freq: 1d, unit: cad, value_kind: price, country: US, category: fx, tags: [cad]}
+  - {series_id: "fred:DCOILWTICO", name: "Crude oil, WTI spot ($/barrel)", freq: 1d, unit: usd, value_kind: price, country: US, category: commodity, tags: [oil]}
+  - {series_id: "fred:DCOILBRENTEU", name: "Crude oil, Brent spot ($/barrel)", freq: 1d, unit: usd, value_kind: price, category: commodity, tags: [oil]}
+  # --- liquidity ---
+  - {series_id: "fred:WALCL", name: "Fed balance sheet, total assets ($ millions)", freq: 1w, unit: usd_mn, unit_mult: 6, value_kind: stock, country: US, category: liquidity, tags: [fed, qt]}
+  - {series_id: "fred:WTREGEN", name: "US Treasury cash account at the Fed ($ millions)", freq: 1w, unit: usd_mn, unit_mult: 6, value_kind: stock, country: US, category: liquidity, tags: [tga]}
+  - {series_id: "fred:RRPONTSYD", name: "Fed overnight reverse repo ($ billions)", freq: 1d, unit: usd_bn, unit_mult: 9, value_kind: stock, country: US, category: liquidity, tags: [rrp]}
+  - {series_id: "fred:WRESBAL", name: "Bank reserves at the Fed ($ billions)", freq: 1w, unit: usd_bn, unit_mult: 9, value_kind: stock, country: US, category: liquidity}
+  - {series_id: "fred:M2SL", name: "US money supply M2 ($ billions)", freq: 1mo, unit: usd_bn, unit_mult: 9, value_kind: stock, country: US, category: liquidity, tags: [m2], publication_lag_days: 25}
+  - {series_id: "fred:SOFR", name: "SOFR overnight rate", freq: 1d, unit: pct, value_kind: yield, country: US, category: rates}
+  # --- US macro ---
+  - {series_id: "fred:CPIAUCSL", name: "US consumer prices (CPI index)", freq: 1mo, unit: index, sa: true, value_kind: level_index, default_transform: yoy, country: US, category: inflation, tags: [cpi], publication_lag_days: 13, supports_vintage: true, vintage_policy: snapshot}
+  - {series_id: "fred:CPILFESL", name: "US core consumer prices (CPI excl. food & energy)", freq: 1mo, unit: index, sa: true, value_kind: level_index, default_transform: yoy, country: US, category: inflation, tags: [cpi, core], publication_lag_days: 13, supports_vintage: true}
+  - {series_id: "fred:PCEPILFE", name: "US core PCE price index", freq: 1mo, unit: index, sa: true, value_kind: level_index, default_transform: yoy, country: US, category: inflation, publication_lag_days: 30}
+  - {series_id: "fred:UNRATE", name: "US unemployment rate", freq: 1mo, unit: pct, sa: true, value_kind: survey, default_transform: diff, country: US, category: labour, publication_lag_days: 7, supports_vintage: true, vintage_policy: snapshot}
+  - {series_id: "fred:PAYEMS", name: "US nonfarm payrolls (thousands of jobs)", freq: 1mo, unit: thousands, sa: true, value_kind: stock, default_transform: diff, country: US, category: labour, tags: [nfp], publication_lag_days: 7, supports_vintage: true, vintage_policy: snapshot}
+  - {series_id: "fred:ICSA", name: "US weekly initial jobless claims", freq: 1w, unit: count, sa: true, value_kind: count, default_transform: level, country: US, category: labour}
+  - {series_id: "fred:GDPC1", name: "US real GDP ($ billions, 2017 prices)", freq: 1q, unit: usd_bn, sa: true, value_kind: flow, default_transform: yoy, country: US, category: activity, publication_lag_days: 30, supports_vintage: true, vintage_policy: snapshot}
+  - {series_id: "fred:A191RL1Q225SBEA", name: "US real GDP growth (quarterly, annualised %)", freq: 1q, unit: pct, value_kind: survey, default_transform: level, country: US, category: activity}
+  - {series_id: "fred:GDPNOW", name: "Atlanta Fed GDPNow (current-quarter growth estimate)", freq: 1q, unit: pct, value_kind: survey, default_transform: level, country: US, category: activity, tags: [nowcast]}
+  - {series_id: "fred:INDPRO", name: "US industrial production (index)", freq: 1mo, unit: index, sa: true, value_kind: level_index, default_transform: yoy, country: US, category: activity}
+  - {series_id: "fred:RSAFS", name: "US retail sales ($ millions)", freq: 1mo, unit: usd_mn, sa: true, value_kind: flow, default_transform: yoy, country: US, category: activity}
+  - {series_id: "fred:HOUST", name: "US housing starts (thousands, annualised)", freq: 1mo, unit: thousands, sa: true, value_kind: flow, default_transform: yoy, country: US, category: housing}
+  - {series_id: "fred:UMCSENT", name: "University of Michigan consumer sentiment", freq: 1mo, unit: index, value_kind: survey, default_transform: diff, country: US, category: sentiment}
+  - {series_id: "fred:USREC", name: "US recession indicator (NBER, 1 = recession)", freq: 1mo, unit: flag, value_kind: other, default_transform: level, country: US, category: activity, tags: [recession]}
+  - {series_id: "fred:SAHMREALTIME", name: "Sahm recession indicator", freq: 1mo, unit: pct, value_kind: survey, default_transform: level, country: US, category: labour, tags: [recession]}
+  - {series_id: "fred:NFCI", name: "Chicago Fed financial conditions index", freq: 1w, unit: index, value_kind: survey, default_transform: diff, country: US, category: stress}
+  # --- Israel (Bank of Israel SDMX, keyless) ---
+  - {series_id: "boi:EXR/RER_USD_ILS", name: "US dollar in shekels (Bank of Israel official rate)", freq: 1d, unit: ils, value_kind: price, country: IL, category: fx, tags: [ils, usd], plausible_min: 1.0, plausible_max: 8}
+  - {series_id: "boi:BR/MNT_RIB_BOI_D", name: "Bank of Israel policy rate", freq: 1d, unit: pct, value_kind: yield, country: IL, category: rates, tags: [boi, policy], plausible_min: -1, plausible_max: 20}
+  - {series_id: "fred:IRLTLT01ILM156N", name: "Israel 10-year government bond yield (monthly)", freq: 1mo, unit: pct, value_kind: yield, country: IL, category: rates, tags: [israel, 10y]}
+  - {series_id: "fred:LRHUTTTTILM156S", name: "Israel unemployment rate", freq: 1mo, unit: pct, sa: true, value_kind: survey, default_transform: diff, country: IL, category: labour}
+  # --- Europe ---
+  - {series_id: "fred:IRLTLT01DEM156N", name: "Germany 10-year government bond yield (monthly)", freq: 1mo, unit: pct, value_kind: yield, country: DE, category: rates}
+  - {series_id: "fred:ECBDFR", name: "ECB deposit rate", freq: 1d, unit: pct, value_kind: yield, country: EA, category: rates, tags: [ecb, policy]}
+  - {series_id: "fred:CP0000EZ19M086NEST", name: "Euro area consumer prices (HICP, index level)", freq: 1mo, unit: index, value_kind: level_index, default_transform: yoy, country: EA, category: inflation}
+  - {series_id: "fred:LRHUTTTTEUM156S", name: "EU unemployment rate", freq: 1mo, unit: pct, value_kind: survey, default_transform: diff, country: EA, category: labour}
+  # --- Derived (formula) series ---
+  - {series_id: "derived:NET_LIQ_BN", name: "Fed net liquidity ($ billions): balance sheet minus Treasury cash minus reverse repo", freq: 1w, unit: usd_bn, value_kind: stock, default_transform: diff, country: US, category: liquidity, formula: "fred:WALCL/1000 - fred:WTREGEN/1000 - fred:RRPONTSYD"}
+  - {series_id: "derived:US2S10S_BP", name: "US yield curve: 10-year minus 2-year (basis points)", freq: 1d, unit: bp, value_kind: spread, default_transform: diff, country: US, category: rates, formula: "(fred:DGS10 - fred:DGS2)*100"}
+  - {series_id: "derived:REAL_10Y_PROXY", name: "US 10-year yield minus inflation expectation (real-yield estimate)", freq: 1d, unit: pct, value_kind: yield, country: US, category: rates, formula: "fred:DGS10 - fred:T10YIE"}
+  - {series_id: "derived:BOI_FED_DIFF", name: "Bank of Israel rate minus Fed funds rate (percentage points)", freq: 1d, unit: pct, value_kind: spread, default_transform: diff, country: IL, category: rates, formula: "boi:BR/MNT_RIB_BOI_D - fred:DFF"}
+  - {series_id: "derived:IL_US_10Y_SPREAD_M", name: "Israel minus US 10-year yield (monthly, percentage points)", freq: 1mo, unit: pct, value_kind: spread, default_transform: diff, country: IL, category: rates, formula: "fred:IRLTLT01ILM156N - fred:DGS10"}
+  # --- Manual (no free API) ---
+  - {series_id: "manual:ISM_MFG_PMI", name: "ISM manufacturing PMI (entered by hand)", freq: 1mo, unit: index, value_kind: survey, default_transform: diff, country: US, category: activity, tags: [pmi, manual], plausible_min: 20, plausible_max: 80, license_note: "ISM report is copyrighted; enter values by hand"}

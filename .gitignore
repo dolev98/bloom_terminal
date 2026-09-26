@@ -16,8 +16,8 @@ frontend/dist/
 !.env.example
 
 # App data (SQLite, Parquet, caches, PDFs, backups)
-data/
-!data/.gitkeep
+/data/
+!/data/.gitkeep
 
 # OS / editors
 .DS_Store
