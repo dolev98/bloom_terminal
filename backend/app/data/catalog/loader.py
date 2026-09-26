@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from pathlib import Path
 
@@ -64,7 +65,7 @@ def normalize_seed(item: dict) -> SeriesSpec:
 
 async def load_seed(path: Path = SEED_PATH) -> int:
     """Insert seed rows that don't exist yet. Returns the number inserted."""
-    data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    data = await asyncio.to_thread(lambda: yaml.safe_load(path.read_text(encoding="utf-8")) or {})
     inserted = 0
     async with session_scope() as s:
         existing = set((await s.execute(select(Series.series_id))).scalars().all())
@@ -107,7 +108,13 @@ async def delete_spec(series_id: str) -> bool:
         return True
 
 
-async def list_specs(provider: str | None = None, country: str | None = None, category: str | None = None, q: str | None = None, enabled_only: bool = False) -> list[SeriesSpec]:
+async def list_specs(
+    provider: str | None = None,
+    country: str | None = None,
+    category: str | None = None,
+    q: str | None = None,
+    enabled_only: bool = False,
+) -> list[SeriesSpec]:
     async with session_scope() as s:
         stmt = select(Series)
         if provider:
@@ -122,7 +129,11 @@ async def list_specs(provider: str | None = None, country: str | None = None, ca
     specs = [spec_from_row(r) for r in rows]
     if q:
         ql = q.lower()
-        specs = [sp for sp in specs if ql in sp.series_id.lower() or ql in sp.name.lower() or any(ql in t for t in sp.tags)]
+        specs = [
+            sp
+            for sp in specs
+            if ql in sp.series_id.lower() or ql in sp.name.lower() or any(ql in t for t in sp.tags)
+        ]
     return specs
 
 
@@ -147,4 +158,14 @@ async def get_meta(series_id: str) -> dict | None:
 async def list_meta() -> dict[str, dict]:
     async with session_scope() as s:
         rows = (await s.execute(select(SeriesMeta))).scalars().all()
-    return {m.series_id: {"first_ts": m.first_ts, "last_ts": m.last_ts, "n_obs": m.n_obs, "fetched_at": m.fetched_at, "last_status": m.last_status, "last_error": m.last_error} for m in rows}
+    return {
+        m.series_id: {
+            "first_ts": m.first_ts,
+            "last_ts": m.last_ts,
+            "n_obs": m.n_obs,
+            "fetched_at": m.fetched_at,
+            "last_status": m.last_status,
+            "last_error": m.last_error,
+        }
+        for m in rows
+    }

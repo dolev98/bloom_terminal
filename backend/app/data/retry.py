@@ -5,7 +5,13 @@ from __future__ import annotations
 import logging
 
 import httpx
-from tenacity import AsyncRetrying, RetryCallState, retry_if_exception, stop_after_attempt, wait_exponential_jitter
+from tenacity import (
+    AsyncRetrying,
+    RetryCallState,
+    retry_if_exception,
+    stop_after_attempt,
+    wait_exponential_jitter,
+)
 
 log = logging.getLogger(__name__)
 
@@ -57,5 +63,7 @@ def retrying(attempts: int = 5) -> AsyncRetrying:
         wait=_Wait(),
         retry=retry_if_exception(_is_retryable),
         reraise=True,
-        before_sleep=lambda s: log.warning("retry %s/%s after %s", s.attempt_number, attempts, s.outcome.exception() if s.outcome else "?"),
+        before_sleep=lambda s: log.warning(
+            "retry %s/%s after %s", s.attempt_number, attempts, s.outcome.exception() if s.outcome else "?"
+        ),
     )

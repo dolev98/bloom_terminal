@@ -47,7 +47,9 @@ class BoiProvider(Provider):
     name: str = "Bank of Israel (SDMX)"
     capabilities: Capability = Capability.SERIES | Capability.SEARCH
     rate: RateSpec = field(default_factory=lambda: RateSpec(per_second=2, per_minute=60, concurrency=2))
-    license: LicenseSpec = field(default_factory=lambda: LicenseSpec(grey=False, attribution="Source: Bank of Israel"))
+    license: LicenseSpec = field(
+        default_factory=lambda: LicenseSpec(grey=False, attribution="Source: Bank of Israel")
+    )
     egress: str = "il"
 
     def parse_url(self, url: str) -> str | None:
@@ -82,7 +84,12 @@ class BoiProvider(Provider):
             freq=_guess_freq(code),
             unit=unit,
             value_kind=kind,
-            default_transform={"yield": "diff_bp", "price": "log_ret", "level_index": "yoy", "stock": "yoy"}.get(kind, "level"),
+            default_transform={
+                "yield": "diff_bp",
+                "price": "log_ret",
+                "level_index": "yoy",
+                "stock": "yoy",
+            }.get(kind, "level"),
             country="IL",
             category=cat,
             license_note="Bank of Israel open data",
@@ -91,7 +98,9 @@ class BoiProvider(Provider):
     async def search(self, q: str) -> list[SeriesSpec]:
         """List available series codes in a dataflow (q = flow name, e.g. 'EXR')."""
         flow = q.strip().upper()
-        rows = await self._csv(f"{BASE}/data/dataflow/BOI.STATISTICS/{flow}/1.0/*", format="csv", lastNObservations=1)
+        rows = await self._csv(
+            f"{BASE}/data/dataflow/BOI.STATISTICS/{flow}/1.0/*", format="csv", lastNObservations=1
+        )
         seen: dict[str, SeriesSpec] = {}
         for r in rows:
             code = r.get("SERIES_CODE") or r.get("SERIES_ID") or ""
@@ -99,7 +108,9 @@ class BoiProvider(Provider):
                 seen[code] = await self.describe(f"{flow}/{code}")
         return list(seen.values())[:200]
 
-    async def get_series(self, spec: SeriesSpec, since: date | None = None, vintage: date | None = None) -> pl.DataFrame:
+    async def get_series(
+        self, spec: SeriesSpec, since: date | None = None, vintage: date | None = None
+    ) -> pl.DataFrame:
         flow, code = self.split_key(spec.provider_key)
         params = {"format": "csv"}
         if since:
@@ -117,11 +128,17 @@ class BoiProvider(Provider):
             vals.append(float(v))
         if not ts:
             return empty_observations()
-        return pl.DataFrame({"ts": ts, "value": vals}).with_columns(pl.col("ts").cast(pl.Datetime("us"))).sort("ts")
+        return (
+            pl.DataFrame({"ts": ts, "value": vals})
+            .with_columns(pl.col("ts").cast(pl.Datetime("us")))
+            .sort("ts")
+        )
 
     async def health(self) -> dict:
         try:
-            rows = await self._csv(f"{BASE}/data/dataflow/BOI.STATISTICS/BR/1.0/MNT_RIB_BOI_D", format="csv", lastNObservations=1)
+            rows = await self._csv(
+                f"{BASE}/data/dataflow/BOI.STATISTICS/BR/1.0/MNT_RIB_BOI_D", format="csv", lastNObservations=1
+            )
             return {"ok": bool(rows), "last": rows[-1].get("OBS_VALUE") if rows else None}
         except Exception as e:
             return {"ok": False, "error": str(e)[:200]}

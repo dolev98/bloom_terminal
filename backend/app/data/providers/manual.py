@@ -7,7 +7,14 @@ from datetime import date
 
 import polars as pl
 
-from app.data.providers.base import Capability, LicenseSpec, Provider, RateSpec, SeriesSpec, empty_observations
+from app.data.providers.base import (
+    Capability,
+    LicenseSpec,
+    Provider,
+    RateSpec,
+    SeriesSpec,
+    empty_observations,
+)
 
 
 @dataclass
@@ -19,9 +26,20 @@ class ManualProvider(Provider):
     license: LicenseSpec = field(default_factory=lambda: LicenseSpec(grey=False, note="user-entered"))
 
     async def describe(self, key: str) -> SeriesSpec:
-        return SeriesSpec(series_id=f"manual:{key}", provider="manual", provider_key=key, name=key, freq="1mo", value_kind="survey", default_transform="diff", category="manual")
+        return SeriesSpec(
+            series_id=f"manual:{key}",
+            provider="manual",
+            provider_key=key,
+            name=key,
+            freq="1mo",
+            value_kind="survey",
+            default_transform="diff",
+            category="manual",
+        )
 
-    async def get_series(self, spec: SeriesSpec, since: date | None = None, vintage: date | None = None) -> pl.DataFrame:
+    async def get_series(
+        self, spec: SeriesSpec, since: date | None = None, vintage: date | None = None
+    ) -> pl.DataFrame:
         return empty_observations()  # data is written directly via the catalog API
 
 
@@ -32,7 +50,9 @@ def parse_csv_observations(text: str) -> pl.DataFrame:
         line = line.strip()
         if not line or line.lower().startswith(("date", "ts")):
             continue
-        parts = [p.strip() for p in line.replace(";", ",").replace("\t", ",").split(",")]  # tabs: pasted from Excel
+        parts = [
+            p.strip() for p in line.replace(";", ",").replace("\t", ",").split(",")
+        ]  # tabs: pasted from Excel
         if len(parts) < 2:
             continue
         d = parts[0]
@@ -44,4 +64,8 @@ def parse_csv_observations(text: str) -> pl.DataFrame:
             continue
     if not rows:
         return empty_observations()
-    return pl.DataFrame({"ts": [r[0] for r in rows], "value": [r[1] for r in rows]}).with_columns(pl.col("ts").cast(pl.Datetime("us"))).sort("ts")
+    return (
+        pl.DataFrame({"ts": [r[0] for r in rows], "value": [r[1] for r in rows]})
+        .with_columns(pl.col("ts").cast(pl.Datetime("us")))
+        .sort("ts")
+    )

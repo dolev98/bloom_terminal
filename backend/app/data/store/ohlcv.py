@@ -19,7 +19,13 @@ class OhlcvStore:
     def path(self, ticker: str, interval: str = "1d") -> Path:
         return self.root / encode_id(ticker.upper()) / f"{interval}.parquet"
 
-    def read(self, ticker: str, interval: str = "1d", start: date | datetime | None = None, end: date | datetime | None = None) -> pl.DataFrame:
+    def read(
+        self,
+        ticker: str,
+        interval: str = "1d",
+        start: date | datetime | None = None,
+        end: date | datetime | None = None,
+    ) -> pl.DataFrame:
         p = self.path(ticker, interval)
         if not p.exists():
             return empty_ohlcv()
@@ -30,7 +36,9 @@ class OhlcvStore:
             df = df.filter(pl.col("ts") <= _dt(end))
         return df
 
-    def write(self, ticker: str, new: pl.DataFrame, interval: str = "1d", replace: bool = False) -> pl.DataFrame:
+    def write(
+        self, ticker: str, new: pl.DataFrame, interval: str = "1d", replace: bool = False
+    ) -> pl.DataFrame:
         if new.is_empty():
             return self.read(ticker, interval)
         new = new.select(list(OHLCV_SCHEMA.keys())).with_columns(pl.col("ts").cast(pl.Datetime("us")))
@@ -38,7 +46,9 @@ class OhlcvStore:
         p.parent.mkdir(parents=True, exist_ok=True)
         if p.exists() and not replace:
             old = pl.read_parquet(p)
-            merged = pl.concat([old, new], how="vertical_relaxed").unique(subset=["ts"], keep="last").sort("ts")
+            merged = (
+                pl.concat([old, new], how="vertical_relaxed").unique(subset=["ts"], keep="last").sort("ts")
+            )
         else:
             merged = new.sort("ts")
         tmp = p.with_suffix(".tmp.parquet")

@@ -25,7 +25,14 @@ TASE_CLOSED_TITLES = (
     "Shmini Atzeret",
     "Simchat Torah",
 )
-TASE_CLOSED_EVES = ("Erev Pesach", "Erev Rosh Hashana", "Erev Yom Kippur", "Erev Sukkot", "Erev Shavuot", "Yom HaZikaron")
+TASE_CLOSED_EVES = (
+    "Erev Pesach",
+    "Erev Rosh Hashana",
+    "Erev Yom Kippur",
+    "Erev Sukkot",
+    "Erev Shavuot",
+    "Yom HaZikaron",
+)
 
 
 @dataclass
@@ -34,13 +41,28 @@ class HebcalProvider(Provider):
     name: str = "Hebcal (Jewish/Israeli holidays)"
     capabilities: Capability = Capability.HOLIDAYS
     rate: RateSpec = field(default_factory=lambda: RateSpec(per_second=5, concurrency=2))
-    license: LicenseSpec = field(default_factory=lambda: LicenseSpec(grey=False, attribution="Holiday data © Hebcal.com, CC BY 4.0"))
+    license: LicenseSpec = field(
+        default_factory=lambda: LicenseSpec(grey=False, attribution="Holiday data © Hebcal.com, CC BY 4.0")
+    )
 
     async def get_holidays(self, country: str, year: int) -> list[Holiday]:
         if country.upper() != "IL":
             return []
         client = get_client()
-        params = {"v": "1", "cfg": "json", "year": str(year), "i": "on", "maj": "on", "min": "off", "mod": "on", "nx": "off", "ss": "off", "mf": "off", "c": "off", "geo": "none"}
+        params = {
+            "v": "1",
+            "cfg": "json",
+            "year": str(year),
+            "i": "on",
+            "maj": "on",
+            "min": "off",
+            "mod": "on",
+            "nx": "off",
+            "ss": "off",
+            "mf": "off",
+            "c": "off",
+            "geo": "none",
+        }
         async for attempt in retrying():
             with attempt:
                 resp = await client.get(BASE, params=params)

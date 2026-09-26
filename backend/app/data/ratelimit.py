@@ -75,7 +75,12 @@ class RateLimiter:
             w.prune(now)
             label = {1.0: "per_second", 60.0: "per_minute", 86400.0: "per_day"}[w.seconds]
             used[label] = {"used": len(w.events), "limit": w.limit}
-        return {"provider": self.provider_id, "windows": used, "total_calls": self.total_calls, "total_wait_s": round(self.total_wait, 1)}
+        return {
+            "provider": self.provider_id,
+            "windows": used,
+            "total_calls": self.total_calls,
+            "total_wait_s": round(self.total_wait, 1),
+        }
 
 
 class LimiterPool:

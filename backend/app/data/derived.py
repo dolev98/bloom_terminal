@@ -8,7 +8,9 @@ import polars as pl
 
 from app.data.providers.base import empty_observations
 
-_ID_RE = re.compile(r"[a-z][a-z0-9_]*:[A-Za-z^][A-Za-z0-9_.^=\-]*(?:/[A-Za-z][A-Za-z0-9_.^=\-]*)*(?::[A-Za-z][A-Za-z0-9_]*)?")
+_ID_RE = re.compile(
+    r"[a-z][a-z0-9_]*:[A-Za-z^][A-Za-z0-9_.^=\-]*(?:/[A-Za-z][A-Za-z0-9_.^=\-]*)*(?::[A-Za-z][A-Za-z0-9_]*)?"
+)
 _SAFE_RE = re.compile(r"^[\sA-Za-z0-9_+\-*/().,]+$")
 
 
@@ -39,7 +41,9 @@ def evaluate(formula: str, frames: dict[str, pl.DataFrame], ffill_limit: int = 1
     assert wide is not None
     wide = wide.sort("ts")
     if ffill_limit:
-        wide = wide.with_columns([pl.col(v).fill_null(strategy="forward", limit=ffill_limit) for v in names.values()])
+        wide = wide.with_columns(
+            [pl.col(v).fill_null(strategy="forward", limit=ffill_limit) for v in names.values()]
+        )
     env = {v: pl.col(v) for v in names.values()}
     result = eval(expr, {"__builtins__": {}}, env)  # noqa: S307 - validated by _SAFE_RE
     out = wide.select(pl.col("ts"), result.alias("value")).drop_nulls("value")

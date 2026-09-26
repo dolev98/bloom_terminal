@@ -18,7 +18,9 @@ import polars as pl
 from pydantic import BaseModel, Field
 
 Freq = Literal["tick", "1m", "5m", "1h", "1d", "1w", "1mo", "1q", "1y", "irregular"]
-ValueKind = Literal["price", "yield", "spread", "level_index", "flow", "stock", "ratio", "survey", "count", "other"]
+ValueKind = Literal[
+    "price", "yield", "spread", "level_index", "flow", "stock", "ratio", "survey", "count", "other"
+]
 Transform = Literal["level", "log_ret", "diff", "diff_bp", "pct", "yoy", "zscore"]
 
 DEFAULT_TRANSFORM_BY_KIND: dict[str, str] = {
@@ -71,7 +73,9 @@ class LicenseSpec:
 
 
 class SeriesSpec(BaseModel):
-    series_id: str = Field(description="Global id, e.g. 'fred:DGS10', 'boi:EXR/RER_USD_ILS', 'yf:^GSPC:close'")
+    series_id: str = Field(
+        description="Global id, e.g. 'fred:DGS10', 'boi:EXR/RER_USD_ILS', 'yf:^GSPC:close'"
+    )
     provider: str
     provider_key: str
     field_name: str | None = None
@@ -238,7 +242,9 @@ class Provider:
         return None
 
     # --- data ------------------------------------------------------------
-    async def get_series(self, spec: SeriesSpec, since: date | None = None, vintage: date | None = None) -> pl.DataFrame:
+    async def get_series(
+        self, spec: SeriesSpec, since: date | None = None, vintage: date | None = None
+    ) -> pl.DataFrame:
         raise NotSupported(f"{self.id}: get_series")
 
     async def get_ohlcv(self, ticker: str, interval: str = "1d", since: date | None = None) -> pl.DataFrame:
@@ -251,7 +257,9 @@ class Provider:
         raise NotSupported(f"{self.id}: stream_quotes")
         yield  # pragma: no cover
 
-    async def get_statements(self, ticker: str, kind: str = "all", since: date | None = None) -> list[Statement]:
+    async def get_statements(
+        self, ticker: str, kind: str = "all", since: date | None = None
+    ) -> list[Statement]:
         raise NotSupported(f"{self.id}: get_statements")
 
     async def get_news(self, tickers: list[str], since: datetime | None = None) -> list[NewsItem]:

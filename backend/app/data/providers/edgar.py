@@ -13,7 +13,15 @@ from datetime import date
 import polars as pl
 
 from app.data.http import get_client
-from app.data.providers.base import Capability, LicenseSpec, Provider, ProviderError, RateSpec, SeriesSpec, empty_observations
+from app.data.providers.base import (
+    Capability,
+    LicenseSpec,
+    Provider,
+    ProviderError,
+    RateSpec,
+    SeriesSpec,
+    empty_observations,
+)
 from app.data.retry import raise_for_retry, retrying
 
 TICKERS_URL = "https://www.sec.gov/files/company_tickers.json"
@@ -29,7 +37,9 @@ class EdgarProvider(Provider):
     name: str = "SEC EDGAR"
     capabilities: Capability = Capability.SERIES | Capability.SEARCH | Capability.STATEMENTS
     rate: RateSpec = field(default_factory=lambda: RateSpec(per_second=8, concurrency=4))
-    license: LicenseSpec = field(default_factory=lambda: LicenseSpec(grey=False, attribution="Source: SEC EDGAR"))
+    license: LicenseSpec = field(
+        default_factory=lambda: LicenseSpec(grey=False, attribution="Source: SEC EDGAR")
+    )
     requires: tuple[str, ...] = ("sec_user_agent",)
     _ticker_map: dict[str, dict] = field(default_factory=dict)
 
@@ -46,7 +56,9 @@ class EdgarProvider(Provider):
     async def ticker_map(self) -> dict[str, dict]:
         if not self._ticker_map:
             data = await self._json(TICKERS_URL)
-            self._ticker_map = {v["ticker"].upper(): {"cik": int(v["cik_str"]), "name": v["title"]} for v in data.values()}
+            self._ticker_map = {
+                v["ticker"].upper(): {"cik": int(v["cik_str"]), "name": v["title"]} for v in data.values()
+            }
         return self._ticker_map
 
     async def resolve_cik(self, ticker_or_cik: str) -> int:
@@ -62,7 +74,9 @@ class EdgarProvider(Provider):
         cik = await self.resolve_cik(ticker_or_cik)
         return await self._json(SUBMISSIONS.format(cik=cik))
 
-    async def recent_filings(self, ticker_or_cik: str, forms: set[str] | None = None, limit: int = 50) -> list[dict]:
+    async def recent_filings(
+        self, ticker_or_cik: str, forms: set[str] | None = None, limit: int = 50
+    ) -> list[dict]:
         sub = await self.submissions(ticker_or_cik)
         rec = sub.get("filings", {}).get("recent", {})
         out = []
@@ -96,16 +110,46 @@ class EdgarProvider(Provider):
         m = await self.ticker_map()
         ql = q.strip().lower()
         hits = [(t, v) for t, v in m.items() if ql in t.lower() or ql in v["name"].lower()][:20]
-        return [SeriesSpec(series_id=f"edgar:{t}:Revenues", provider="edgar", provider_key=t, field_name="Revenues", name=v["name"], freq="1q", unit="USD", value_kind="flow", default_transform="yoy", country="US", category="fundamentals") for t, v in hits]
+        return [
+            SeriesSpec(
+                series_id=f"edgar:{t}:Revenues",
+                provider="edgar",
+                provider_key=t,
+                field_name="Revenues",
+                name=v["name"],
+                freq="1q",
+                unit="USD",
+                value_kind="flow",
+                default_transform="yoy",
+                country="US",
+                category="fundamentals",
+            )
+            for t, v in hits
+        ]
 
     async def describe(self, key: str) -> SeriesSpec:
         ticker, _, concept = key.partition(":")
         concept = concept or "Revenues"
         m = await self.ticker_map()
         name = m.get(ticker.upper(), {}).get("name", ticker)
-        return SeriesSpec(series_id=f"edgar:{ticker.upper()}:{concept}", provider="edgar", provider_key=ticker.upper(), field_name=concept, name=f"{name} — {concept}", freq="1q", unit="USD", value_kind="flow", default_transform="yoy", country="US", category="fundamentals", publication_lag_days=40)
+        return SeriesSpec(
+            series_id=f"edgar:{ticker.upper()}:{concept}",
+            provider="edgar",
+            provider_key=ticker.upper(),
+            field_name=concept,
+            name=f"{name} — {concept}",
+            freq="1q",
+            unit="USD",
+            value_kind="flow",
+            default_transform="yoy",
+            country="US",
+            category="fundamentals",
+            publication_lag_days=40,
+        )
 
-    async def get_series(self, spec: SeriesSpec, since: date | None = None, vintage: date | None = None) -> pl.DataFrame:
+    async def get_series(
+        self, spec: SeriesSpec, since: date | None = None, vintage: date | None = None
+    ) -> pl.DataFrame:
         """XBRL concept as a series: quarterly (3-month) values from companyconcept, keyed by period end."""
         concept = spec.field_name or "Revenues"
         taxonomy = spec.params.get("taxonomy", "us-gaap")

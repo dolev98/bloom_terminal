@@ -9,7 +9,17 @@ from dataclasses import dataclass, field
 from datetime import UTC, date, datetime, timedelta
 
 from app.data.http import get_client
-from app.data.providers.base import Capability, CorporateEvent, LicenseSpec, NewsItem, Provider, ProviderError, Quote, RateSpec, SeriesSpec
+from app.data.providers.base import (
+    Capability,
+    CorporateEvent,
+    LicenseSpec,
+    NewsItem,
+    Provider,
+    ProviderError,
+    Quote,
+    RateSpec,
+    SeriesSpec,
+)
 from app.data.retry import raise_for_retry, retrying
 
 BASE = "https://finnhub.io/api/v1"
@@ -21,7 +31,11 @@ class FinnhubProvider(Provider):
     name: str = "Finnhub (free tier)"
     capabilities: Capability = Capability.QUOTES | Capability.NEWS | Capability.EVENTS | Capability.SEARCH
     rate: RateSpec = field(default_factory=lambda: RateSpec(per_second=20, per_minute=55, concurrency=4))
-    license: LicenseSpec = field(default_factory=lambda: LicenseSpec(grey=False, personal_use_only=True, note="Finnhub free: personal, non-commercial"))
+    license: LicenseSpec = field(
+        default_factory=lambda: LicenseSpec(
+            grey=False, personal_use_only=True, note="Finnhub free: personal, non-commercial"
+        )
+    )
     requires: tuple[str, ...] = ("finnhub_api_key",)
     api_key: str = ""
 
@@ -29,7 +43,9 @@ class FinnhubProvider(Provider):
         client = get_client()
         async for attempt in retrying():
             with attempt:
-                resp = await client.get(f"{BASE}/{path}", params=params, headers={"X-Finnhub-Token": self.api_key})
+                resp = await client.get(
+                    f"{BASE}/{path}", params=params, headers={"X-Finnhub-Token": self.api_key}
+                )
                 if resp.status_code in (401, 403):
                     raise ProviderError(f"Finnhub {resp.status_code}: {resp.text[:120]}")
                 raise_for_retry(resp)
@@ -42,14 +58,28 @@ class FinnhubProvider(Provider):
             if not q or q.get("c") in (None, 0):
                 continue
             ts = datetime.fromtimestamp(q.get("t") or 0, tz=UTC) if q.get("t") else datetime.now(tz=UTC)
-            out.append(Quote(ticker=t, ts=ts, last=float(q["c"]), open=q.get("o"), high=q.get("h"), low=q.get("l"), prev_close=q.get("pc"), change_pct=q.get("dp"), source="finnhub"))
+            out.append(
+                Quote(
+                    ticker=t,
+                    ts=ts,
+                    last=float(q["c"]),
+                    open=q.get("o"),
+                    high=q.get("h"),
+                    low=q.get("l"),
+                    prev_close=q.get("pc"),
+                    change_pct=q.get("dp"),
+                    source="finnhub",
+                )
+            )
         return out
 
     async def get_news(self, tickers: list[str], since: datetime | None = None) -> list[NewsItem]:
         since = since or datetime.now(tz=UTC) - timedelta(days=7)
         out: list[NewsItem] = []
         for t in tickers:
-            items = await self._get("company-news", symbol=t, **{"from": since.date().isoformat(), "to": date.today().isoformat()})
+            items = await self._get(
+                "company-news", symbol=t, **{"from": since.date().isoformat(), "to": date.today().isoformat()}
+            )
             for it in items or []:
                 out.append(
                     NewsItem(
@@ -61,7 +91,11 @@ class FinnhubProvider(Provider):
                         tickers=[t],
                         publisher=it.get("source"),
                         summary=it.get("summary"),
-                        raw={"category": it.get("category"), "related": it.get("related"), "image": it.get("image")},
+                        raw={
+                            "category": it.get("category"),
+                            "related": it.get("related"),
+                            "image": it.get("image"),
+                        },
                     )
                 )
         return out
@@ -84,7 +118,18 @@ class FinnhubProvider(Provider):
                         kind="earnings",
                         ts=datetime.fromisoformat(d).replace(tzinfo=UTC),
                         source="finnhub",
-                        details={k: e.get(k) for k in ("epsEstimate", "epsActual", "revenueEstimate", "revenueActual", "hour", "quarter", "year")},
+                        details={
+                            k: e.get(k)
+                            for k in (
+                                "epsEstimate",
+                                "epsActual",
+                                "revenueEstimate",
+                                "revenueActual",
+                                "hour",
+                                "quarter",
+                                "year",
+                            )
+                        },
                     )
                 )
         return out
@@ -94,7 +139,20 @@ class FinnhubProvider(Provider):
         out = []
         for r in (data or {}).get("result", [])[:20]:
             sym = r.get("symbol", "")
-            out.append(SeriesSpec(series_id=f"finnhub:{sym}:last", provider="finnhub", provider_key=sym, field_name="last", name=r.get("description", sym), freq="tick", unit="USD", value_kind="price", default_transform="log_ret", category="equity"))
+            out.append(
+                SeriesSpec(
+                    series_id=f"finnhub:{sym}:last",
+                    provider="finnhub",
+                    provider_key=sym,
+                    field_name="last",
+                    name=r.get("description", sym),
+                    freq="tick",
+                    unit="USD",
+                    value_kind="price",
+                    default_transform="log_ret",
+                    category="equity",
+                )
+            )
         return out
 
     async def peers(self, ticker: str, grouping: str = "subIndustry") -> list[str]:

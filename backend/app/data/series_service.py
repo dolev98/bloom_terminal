@@ -19,8 +19,25 @@ from app.data.store.sqlite import session_scope
 log = logging.getLogger(__name__)
 
 # How stale a series may be before a refresh is due (by native frequency).
-STALE_AFTER = {"tick": timedelta(minutes=1), "1m": timedelta(minutes=5), "5m": timedelta(minutes=15), "1h": timedelta(hours=1), "1d": timedelta(hours=18), "1w": timedelta(days=6), "1mo": timedelta(days=7), "1q": timedelta(days=14), "1y": timedelta(days=30), "irregular": timedelta(days=1)}
-OVERLAP = {"1d": timedelta(days=10), "1w": timedelta(days=30), "1mo": timedelta(days=100), "1q": timedelta(days=400), "1y": timedelta(days=800)}
+STALE_AFTER = {
+    "tick": timedelta(minutes=1),
+    "1m": timedelta(minutes=5),
+    "5m": timedelta(minutes=15),
+    "1h": timedelta(hours=1),
+    "1d": timedelta(hours=18),
+    "1w": timedelta(days=6),
+    "1mo": timedelta(days=7),
+    "1q": timedelta(days=14),
+    "1y": timedelta(days=30),
+    "irregular": timedelta(days=1),
+}
+OVERLAP = {
+    "1d": timedelta(days=10),
+    "1w": timedelta(days=30),
+    "1mo": timedelta(days=100),
+    "1q": timedelta(days=400),
+    "1y": timedelta(days=800),
+}
 
 _store: ParquetStore | None = None
 
@@ -67,7 +84,9 @@ async def refresh_series(series_id: str, full: bool = False) -> dict:
             since = (existing["last_ts"] - OVERLAP.get(spec.freq, timedelta(days=30))).date()
     status, err, rows, dropped = "ok", None, 0, 0
     try:
-        df = await reg.call(provider, "get_series", lambda: provider.get_series(spec, since=since), key=series_id)
+        df = await reg.call(
+            provider, "get_series", lambda: provider.get_series(spec, since=since), key=series_id
+        )
         df, dropped = validate_range(spec, df)
         if dropped:
             log.warning("%s: dropped %d implausible values", series_id, dropped)
@@ -120,7 +139,9 @@ async def _update_meta(series_id: str, status: str, err: str | None, rows: int) 
 async def is_stale(spec: SeriesSpec, meta: dict | None) -> bool:
     if meta is None or meta.get("fetched_at") is None:
         return True
-    return datetime.now(UTC).replace(tzinfo=None) - meta["fetched_at"] > STALE_AFTER.get(spec.freq, timedelta(days=1))
+    return datetime.now(UTC).replace(tzinfo=None) - meta["fetched_at"] > STALE_AFTER.get(
+        spec.freq, timedelta(days=1)
+    )
 
 
 async def refresh_stale(limit: int | None = None) -> list[dict]:

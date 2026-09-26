@@ -30,7 +30,13 @@ class ParquetStore:
     def exists(self, series_id: str, vintage: str = "latest") -> bool:
         return self.path(series_id, vintage).exists()
 
-    def read(self, series_id: str, start: date | datetime | None = None, end: date | datetime | None = None, vintage: str = "latest") -> pl.DataFrame:
+    def read(
+        self,
+        series_id: str,
+        start: date | datetime | None = None,
+        end: date | datetime | None = None,
+        vintage: str = "latest",
+    ) -> pl.DataFrame:
         p = self.path(series_id, vintage)
         if not p.exists():
             return empty_observations()
@@ -41,14 +47,18 @@ class ParquetStore:
             df = df.filter(pl.col("ts") <= _to_dt(end))
         return df
 
-    def write(self, series_id: str, new: pl.DataFrame, vintage: str = "latest", replace: bool = False) -> pl.DataFrame:
+    def write(
+        self, series_id: str, new: pl.DataFrame, vintage: str = "latest", replace: bool = False
+    ) -> pl.DataFrame:
         """Merge `new` observations into the stored frame (new values win on equal ts). Returns the merged frame."""
         new = _normalize(new)
         p = self.path(series_id, vintage)
         p.parent.mkdir(parents=True, exist_ok=True)
         if p.exists() and not replace:
             old = pl.read_parquet(p)
-            merged = pl.concat([old, new], how="vertical_relaxed").unique(subset=["ts"], keep="last").sort("ts")
+            merged = (
+                pl.concat([old, new], how="vertical_relaxed").unique(subset=["ts"], keep="last").sort("ts")
+            )
         else:
             merged = new.sort("ts")
         tmp = p.with_suffix(".tmp.parquet")

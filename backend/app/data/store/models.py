@@ -47,13 +47,17 @@ class Series(Base):
     created_at: Mapped[datetime] = mapped_column(default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(default=utcnow, onupdate=utcnow)
 
-    meta: Mapped[SeriesMeta | None] = relationship(back_populates="series", uselist=False, cascade="all, delete-orphan")
+    meta: Mapped[SeriesMeta | None] = relationship(
+        back_populates="series", uselist=False, cascade="all, delete-orphan"
+    )
 
 
 class SeriesMeta(Base):
     __tablename__ = "series_meta"
 
-    series_id: Mapped[str] = mapped_column(ForeignKey("series.series_id", ondelete="CASCADE"), primary_key=True)
+    series_id: Mapped[str] = mapped_column(
+        ForeignKey("series.series_id", ondelete="CASCADE"), primary_key=True
+    )
     first_ts: Mapped[datetime | None] = mapped_column(nullable=True)
     last_ts: Mapped[datetime | None] = mapped_column(nullable=True)
     n_obs: Mapped[int] = mapped_column(Integer, default=0)
@@ -117,7 +121,9 @@ class Watchlist(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(80), unique=True)
     created_at: Mapped[datetime] = mapped_column(default=utcnow)
-    items: Mapped[list[WatchlistItem]] = relationship(back_populates="watchlist", cascade="all, delete-orphan", order_by="WatchlistItem.position")
+    items: Mapped[list[WatchlistItem]] = relationship(
+        back_populates="watchlist", cascade="all, delete-orphan", order_by="WatchlistItem.position"
+    )
 
 
 class WatchlistItem(Base):

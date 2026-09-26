@@ -26,7 +26,14 @@ from app.data.retry import raise_for_retry, retrying
 BASE = "https://api.stlouisfed.org/fred"
 FRED_ATTRIBUTION = "This product uses the FRED® API but is not endorsed or certified by the Federal Reserve Bank of St. Louis."
 
-_FREQ_MAP = {"Daily": "1d", "Weekly": "1w", "Biweekly": "1w", "Monthly": "1mo", "Quarterly": "1q", "Annual": "1y"}
+_FREQ_MAP = {
+    "Daily": "1d",
+    "Weekly": "1w",
+    "Biweekly": "1w",
+    "Monthly": "1mo",
+    "Quarterly": "1q",
+    "Annual": "1y",
+}
 _URL_RE = re.compile(r"fred\.stlouisfed\.org/(?:series|graph)/?\??(?:id=)?([A-Za-z0-9_]+)")
 
 
@@ -36,7 +43,9 @@ class FredProvider(Provider):
     name: str = "FRED / ALFRED (St. Louis Fed)"
     capabilities: Capability = Capability.SERIES | Capability.SEARCH
     rate: RateSpec = field(default_factory=lambda: RateSpec(per_minute=110, concurrency=4))
-    license: LicenseSpec = field(default_factory=lambda: LicenseSpec(grey=False, attribution=FRED_ATTRIBUTION))
+    license: LicenseSpec = field(
+        default_factory=lambda: LicenseSpec(grey=False, attribution=FRED_ATTRIBUTION)
+    )
     requires: tuple[str, ...] = ("fred_api_key",)
     api_key: str = ""
 
@@ -71,7 +80,15 @@ class FredProvider(Provider):
             unit=_norm_unit(units),
             sa=(s.get("seasonal_adjustment_short") == "SA"),
             value_kind=kind,
-            default_transform={"yield": "diff_bp", "spread": "diff_bp", "price": "log_ret", "level_index": "log_ret", "stock": "yoy", "flow": "pct", "survey": "diff"}.get(kind, "level"),
+            default_transform={
+                "yield": "diff_bp",
+                "spread": "diff_bp",
+                "price": "log_ret",
+                "level_index": "log_ret",
+                "stock": "yoy",
+                "flow": "pct",
+                "survey": "diff",
+            }.get(kind, "level"),
             supports_vintage=True,
             vintage_policy="native",
             country=_guess_country(s.get("title", "")),
@@ -80,7 +97,9 @@ class FredProvider(Provider):
         )
 
     async def search(self, q: str) -> list[SeriesSpec]:
-        data = await self._get("series/search", search_text=q, limit=20, order_by="popularity", sort_order="desc")
+        data = await self._get(
+            "series/search", search_text=q, limit=20, order_by="popularity", sort_order="desc"
+        )
         out = []
         for s in data.get("seriess", []):
             out.append(
@@ -97,7 +116,9 @@ class FredProvider(Provider):
             )
         return out
 
-    async def get_series(self, spec: SeriesSpec, since: date | None = None, vintage: date | None = None) -> pl.DataFrame:
+    async def get_series(
+        self, spec: SeriesSpec, since: date | None = None, vintage: date | None = None
+    ) -> pl.DataFrame:
         params: dict = {"series_id": spec.provider_key, "limit": 100000}
         if since:
             params["observation_start"] = since.isoformat()
@@ -114,7 +135,11 @@ class FredProvider(Provider):
         df = pl.DataFrame({"ts": [o["date"] for o in obs], "value": [o["value"] for o in obs]})
         df = df.with_columns(
             pl.col("ts").str.strptime(pl.Datetime("us"), "%Y-%m-%d"),
-            pl.when(pl.col("value") == ".").then(None).otherwise(pl.col("value")).cast(pl.Float64, strict=False).alias("value"),
+            pl.when(pl.col("value") == ".")
+            .then(None)
+            .otherwise(pl.col("value"))
+            .cast(pl.Float64, strict=False)
+            .alias("value"),
         )
         return df.drop_nulls("value")
 
@@ -178,7 +203,11 @@ def _guess_kind(units: str, title: str) -> str:
     if "index" in u or "index" in t:
         return "level_index"
     if u.startswith("bil") or u.startswith("mil") or "dollars" in u or "$" in u:
-        return "stock" if any(w in t for w in ("assets", "m2", "m1", "balance", "reserve", "deposits", "debt")) else "flow"
+        return (
+            "stock"
+            if any(w in t for w in ("assets", "m2", "m1", "balance", "reserve", "deposits", "debt"))
+            else "flow"
+        )
     if pct:
         return "survey"
     return "other"
@@ -186,7 +215,15 @@ def _guess_kind(units: str, title: str) -> str:
 
 def _guess_country(title: str) -> str | None:
     t = title.lower()
-    for name, code in (("israel", "IL"), ("euro area", "EA"), ("germany", "DE"), ("united kingdom", "GB"), ("japan", "JP"), ("china", "CN"), ("canada", "CA")):
+    for name, code in (
+        ("israel", "IL"),
+        ("euro area", "EA"),
+        ("germany", "DE"),
+        ("united kingdom", "GB"),
+        ("japan", "JP"),
+        ("china", "CN"),
+        ("canada", "CA"),
+    ):
         if name in t:
             return code
     return "US"

@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
@@ -57,7 +57,8 @@ def mk(
 
 @pytest.fixture
 def now():
-    return datetime(2026, 9, 23, 12, 0)
+    # relative to the real clock: the services compare against utcnow() ("last 7 days", rails)
+    return datetime.now(UTC).replace(tzinfo=None, minute=0, second=0, microsecond=0)
 
 
 @pytest.fixture
